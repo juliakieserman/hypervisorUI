@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/general.css" rel="stylesheet">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js" ></script>
+    <!--<script src="Chartjs/chart.js"></script>
+    <script src="js/angular-chart.min.js"></script>-->
+    <!--<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
+    <script src="d3/nv.d3.js"></script>
+
+    <link href="css/zoneView.css" rel="stylesheet">
+    <link href="d3/nv.d3.css" rel="stylesheet">
+</head>
+<body ng-app="myApp">
+
+   <!-- <div>
+        <ul id="sideMenu">
+            <li><a href="#/">General</a></li>
+            <li><a href="#env">Environment</a></li>
+            <li><a href="#zone">Zone</a></li>
+            <li><a href="#hyp">Hypervisor</a></li>
+        </ul>
+    </div>-->
+
+
+   <div ng-controller="menuCtrl">
+       <div>
+           <ul id="sideMenu">
+               <li ng-class="genClass" ng-click="resetActive('gen')"><a href="#">General</a></li>
+               <li ng-class="envClass" ng-click="resetActive('env')"><a href="#">Environment</a></li>
+               <li ng-class="zoneClass" ng-click="resetActive('zone')"><a href="#">Zone</a></li>
+               <li ng-class="hypClass" ng-click="resetActive('hyp')"><a href="#">Hypervisor</a></li>
+           </ul>
+       </div>
+       <div id="topMenu">
+           <div class="btn-group">
+               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   {{env}} <span class="caret"></span>
+               </button>
+               <ul class="dropdown-menu">
+                   <li ng-click="setEnv('All Environments')"><a href="#">All Environments</a></li>
+                   <li ng-repeat="envList in envs" ng-click="setEnv(envList)"><a href="#">{{envList}}</a></li>
+               </ul>
+           </div>
+           <div class="btn-group">
+               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   {{zone}} <span class="caret"></span>
+               </button>
+               <ul class="dropdown-menu">
+                   <li ng-click="setZone('All Zones')"><a href="#">All Zones</a></li>
+                   <li ng-repeat="zoneList in zones" ng-click="setZone(zoneList)"><a href="#">{{zoneList}}</a></li>
+               </ul>
+           </div>
+           <div class="btn-group">
+               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   {{hyp}} <span class="caret"></span>
+               </button>
+               <ul class="dropdown-menu">
+                   <li ng-click="setHyp('All Hypervisors')"><a href="#">All Hypervisors</a></li>
+                   <li ng-repeat="hypList in hyps" ng-click="setHyp(hypList)"><a href="#">{{hypList}}</a></li>
+               </ul>
+           </div>
+           <div class="btn-group">
+               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                   {{filter}} <span class="caret"></span>
+               </button>
+               <ul class="dropdown-menu">
+                   <li ng-click="setFilter('No Filter')"><a href="#">No Filter</a></li>
+                   <li ng-click="setFilter('Over Allocated')"><a href="#">Over Allocated</a></li>
+               </ul>
+           </div>
+       </div>
+
+   </div>
+
+   <!--<ng-view></ng-view>-->
+
+   <div class="view" ng-controller="genCtrl as gen" ng-show="genShow">
+        General View
+    </div>
+    <div class="view" ng-controller="envCtrl as env" ng-show="envShow">
+        Environment View
+    </div>
+   <div class="view" ng-controller="zoneCtrl as zone" ng-show="zoneShow">
+
+       <!--<canvas id="line" class="chart chart-line" chart-data="data"
+               chart-labels="labels" chart-series="series" chart-options="options"
+               chart-dataset-override="datasetOverride" chart-click="onClick"
+       </canvas>-->
+
+       <div id="chartMem">
+           <svg></svg>
+       </div>
+       <div id="chartDisk">
+          <svg></svg>
+       </div>
+       <div id="chartCpu">
+           <svg></svg>
+       </div>
+   </div>
+   <div class="view" ng-controller="hypCtrl as hyp" ng-show="hypShow">
+       Hypervisor View
+   </div>
+    <script src="js/jquery.js"></script>
+
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/general.js"></script>
+</body>
+</html>

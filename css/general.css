@@ -1,0 +1,53 @@
+#sideMenu {
+    list-style-type: none;
+    margin: 10em 0 0 2em;
+    padding: 0;
+    position:fixed;
+}
+
+#sideMenu li{
+    margin-top:10px;
+}
+
+#topMenu{
+    margin-left:20%;
+    margin-top:5%;
+}
+
+li a {
+    display: block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #009fdb;
+    font-size: 18px;
+    height: 44px;
+    line-height: 44px;
+}
+
+li a:hover {
+    color: black;
+}
+li a:active {
+    color: #009fdb;
+}
+
+.activeView{
+     color:red;
+ }
+
+.view{
+    margin-left:20%;
+    margin-top:5%;
+}
+
+#chartMem svg{
+    height: 300px;
+}
+
+#chartDisk svg{
+    height: 300px;
+}
+
+#chartCpu svg{
+    height: 300px;
+}
