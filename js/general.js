@@ -2,7 +2,7 @@
  * Created by kw741q on 7/15/2016.
  */
 
-var app = angular.module ( 'myApp' , []);
+var app = angular.module ( 'myApp' , ['ngAnimate', 'ngRoute', 'ui.bootstrap']);
 
 /*app.config(function($routeProvider){
     $routeProvider
@@ -68,6 +68,18 @@ app.factory('menuData', function(){
         }
     }
 });
+
+//typeahead controller
+app.controller('TypeaheadCtrl', function($scope, $http) {
+    $scope.selected = undefined;
+    $scope.hypervisors = ["dpa1r10c002.dpa1.cci.att.com", "dpa1r10c003.dpa1.cci.att.com",
+        "dpa1r10c002.dpa1.cci.att.com", "dpa1r10c010.dpa1.cci.att.com",
+        "dpa1r10c002.dpa1.cci.att.com", "dpa1r10c012.dpa1.cci.att.com" , "kgm1r13c021.kgm1.cci.att.com",
+        "kgm1r14c021.kgm1.cci.att.com", "kgm1r12c019.kgm1.cci.att.com", " kgm1r12c013.kgm1.cci.att.com"];
+
+});
+
+
 app.controller("menuCtrl", function($scope, menuData){
     //current selection:
     $scope.genClass = 'activeView';
