@@ -79,10 +79,6 @@ app.controller('TypeaheadCtrl', function($scope, $http) {
 
 });
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/master
 app.controller("menuCtrl", function($scope, menuData){
     //current selection:
     $scope.genClass = 'activeView';
