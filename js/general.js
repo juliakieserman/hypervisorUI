@@ -204,36 +204,8 @@ app.controller("envCtrl", function($scope, menuData){
     });
 });
 app.controller("zoneCtrl", function($scope, menuData){
-    $scope.labels = ["January", "February", "March", "April", "May", "June", "July"];
-    $scope.series = ['Series A', 'Series B'];
-    $scope.data = [
-        [65, 59, 80, 81, 56, 55, 40],
-        [28, 48, 40, 19, 86, 27, 90]
-    ];
-    $scope.onClick = function (points, evt) {
-        console.log(points, evt);
-    };
-    $scope.datasetOverride = [{ yAxisID: 'y-axis-1' }, { yAxisID: 'y-axis-2' }];
-    $scope.options = {
-        scales: {
-            yAxes: [
-                {
-                    id: 'y-axis-1',
-                    type: 'linear',
-                    display: true,
-                    position: 'left'
-                },
-                {
-                    id: 'y-axis-2',
-                    type: 'linear',
-                    display: true,
-                    position: 'right'
-                }
-            ]
-        }
-    };
 
-    $scope.zoneShow = true;
+    $scope.zoneShow = false;
     $scope.zone = [];
 
     var dataByZones = [];//holds objects whose zones match current filtering
@@ -246,6 +218,10 @@ app.controller("zoneCtrl", function($scope, menuData){
     var memoryZoneData = [];
     var diskZoneData = [];
     var cpuZoneData = [];
+
+    var chartMemory;
+    var chartCpu;
+    var chartDisk;
     //------------------------------
 
 
@@ -258,6 +234,7 @@ app.controller("zoneCtrl", function($scope, menuData){
         if(newValue !== oldValue) {
             if(newValue == "Over Allocated"){
                 filterByOverAllocated();
+
             }
             if(newValue == "No Filter"){
                 $scope.filterZone(menuData.getZone());
@@ -266,15 +243,30 @@ app.controller("zoneCtrl", function($scope, menuData){
     });
 
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
-       if(newValue !== oldValue){
-           if(newValue == "zone"){
-               $scope.zoneShow = true;
-           } else{
-               $scope.zoneShow = false;
-           }
-       }
+        if(newValue !== oldValue){
+            if(newValue == "zone"){
+                $scope.zoneShow = true;
+                /*setTimeout(chartCpu.update(), 500);
+                 setTimeout(chartMemory.update(), 500);
+                 setTimeout(chartDisk.update(), 500);*/
+                redrawGraphs();
+
+            } else{
+                $scope.zoneShow = false;
+            }
+        }
     });
     //----------------------------------
+
+    function redrawGraphs(){
+        d3.select("svg").remove();
+        d3.select("svg").remove();
+        d3.select("svg").remove();
+        d3.select('#chartMem').append('svg');
+        d3.select("#chartDisk").append('svg');
+        d3.select("#chartCpu").append('svg');
+        addGraphs();
+    }
 
     $scope.filterZone = function(zoneName, runDrawFunct){
         dataByZones = [];
@@ -300,7 +292,7 @@ app.controller("zoneCtrl", function($scope, menuData){
         }
 
         if(runDrawFunct){
-            //drawVisualization();
+            redrawGraphs();
         } else{
         }
     }
@@ -346,113 +338,116 @@ app.controller("zoneCtrl", function($scope, menuData){
         diskZoneData = overallocatedDiskData;
     }
 
-    nv.addGraph(function() {
-        var chart = nv.models.linePlusBarChart()
+    function addGraphs(){
+        nv.addGraph(function() {
+            chartMemory = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
                 .x(function(d,i) { return i })
                 .y(function(d) { return d[1] })
                 .color(d3.scale.category10().range())
             ;
 
-        chart.xAxis
-            .axisLabel("Hypervisors")
-            .showMaxMin(false)
-            .tickFormat(function(d) {
-                var dx = memoryZoneData[0].values[d] && memoryZoneData[0].values[d][0];
-                return dx;
-            });
+            chartMemory.xAxis
+                .axisLabel("Hypervisors")
+                .showMaxMin(false)
+                .tickFormat(function(d) {
+                    var dx = memoryZoneData[0].values[d] && memoryZoneData[0].values[d][0];
+                    return dx;
+                });
 
-        chart.y1Axis
-            .axisLabel("Memory (Mb)")
-            .tickFormat(function(d) { return d3.format(',f')(d) });
+            chartMemory.y1Axis
+                .axisLabel("Memory (Mb)")
+                .tickFormat(function(d) { return d3.format(',f')(d) });
 
-        chart.y2Axis
-            .tickFormat(function(d) { return d3.format(',f')(d) });
+            chartMemory.y2Axis
+                .tickFormat(function(d) { return d3.format(',f')(d) });
 
-        chart.bars.forceY([0]);
+            chartMemory.bars.forceY([0]);
 
-        d3.select('#chartMem svg')
-            .datum(memoryZoneData)
-            .transition().duration(500)
-            .call(chart)
-        ;
+            d3.select('#chartMem svg')
+                .datum(memoryZoneData)
+                .transition().duration(500)
+                .call(chartMemory)
+            ;
 
-        nv.utils.windowResize(chart.update);
+            nv.utils.windowResize(chartMemory.update);
 
-        return chart;
-    });
+            return chartMemory;
+        });
 
-    nv.addGraph(function() {
-        var chart = nv.models.linePlusBarChart()
+        nv.addGraph(function() {
+            chartDisk = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
                 .x(function(d,i) { return i })
                 .y(function(d) { return d[1] })
                 .color(d3.scale.category10().range())
             ;
 
-        chart.xAxis
-            .axisLabel("Hypervisors")
-            .showMaxMin(false)
-            .tickFormat(function(d) {
-                var dx = diskZoneData[0].values[d][0];
-                return dx
-            });
+            chartDisk.xAxis
+                .axisLabel("Hypervisors")
+                .showMaxMin(false)
+                .tickFormat(function(d) {
+                    var dx =  diskZoneData[0].values[d] && diskZoneData[0].values[d][0];
+                    return dx
+                });
 
-        chart.y1Axis
-            .axisLabel("Disk Usage (GB)")
-            .tickFormat(d3.format(',f'));
+            chartDisk.y1Axis
+                .axisLabel("Disk Usage (GB)")
+                .tickFormat(d3.format(',f'));
 
-        chart.y2Axis
-            .tickFormat(function(d) { return d3.format(',f')(d) });
+            chartDisk.y2Axis
+                .tickFormat(function(d) { return d3.format(',f')(d) });
 
-        chart.bars.forceY([0]);
+            chartDisk.bars.forceY([0]);
 
-        d3.select('#chartDisk svg')
-            .datum(diskZoneData)
-            .transition().duration(500)
-            .call(chart)
-        ;
+            d3.select('#chartDisk svg')
+                .datum(diskZoneData)
+                .transition().duration(500)
+                .call(chartDisk)
+            ;
 
-        nv.utils.windowResize(chart.update);
+            nv.utils.windowResize(chartDisk.update);
 
-        return chart;
-    });
+            return chartDisk;
+        });
 
-    nv.addGraph(function() {
-        var chart = nv.models.linePlusBarChart()
+        nv.addGraph(function() {
+            chartCpu = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
                 .x(function(d,i) { return i })
                 .y(function(d) { return d[1] })
                 .color(d3.scale.category10().range())
             ;
 
-        chart.xAxis
-            .axisLabel('Hypervisors')
-            .showMaxMin(false)
-            .tickFormat(function(d) {
-                var dx = cpuZoneData[0].values[d][0];
-                return dx
-            });
+            chartCpu.xAxis
+                .axisLabel('Hypervisors')
+                .showMaxMin(false)
+                .tickFormat(function(d) {
+                    var dx =  cpuZoneData[0].values[d] && cpuZoneData[0].values[d][0];
+                    return dx
+                });
 
-        chart.y1Axis
-            .axisLabel('vCPUs')
-            .tickFormat(d3.format(',f'));
+            chartCpu.y1Axis
+                .axisLabel('vCPUs')
+                .tickFormat(d3.format(',f'));
 
-        chart.y2Axis
-            .tickFormat(d3.format(',f'));
+            chartCpu.y2Axis
+                .tickFormat(d3.format(',f'));
 
-        chart.bars.forceY([0]);
+            chartCpu.bars.forceY([0]);
 
-        d3.select('#chartCpu svg')
-            .datum(cpuZoneData)
-            .transition().duration(500)
-            .call(chart)
-        ;
+            d3.select('#chartCpu svg')
+                .datum(cpuZoneData)
+                .transition().duration(500)
+                .call(chartCpu)
+            ;
 
-        nv.utils.windowResize(function(){ chart.update() });
+            nv.utils.windowResize(function(){ chartCpu.update() });
 
-        return chart;
-    });
+            return chartCpu;
+        });
+    }
+    addGraphs();
 
     function obtainMemoryZoneData(data){
         var chartData = [
@@ -532,10 +527,8 @@ app.controller("zoneCtrl", function($scope, menuData){
         }
         return chartData;
     }
-
-    
-
 });
+
 app.controller("hypCtrl", function($scope, menuData){
     $scope.hypShow = false;
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
