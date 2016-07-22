@@ -234,10 +234,9 @@ app.controller("zoneCtrl", function($scope, menuData){
         if(newValue !== oldValue) {
             if(newValue == "Over Allocated"){
                 filterByOverAllocated();
-
             }
             if(newValue == "No Filter"){
-                $scope.filterZone(menuData.getZone());
+                $scope.filterZone(menuData.getZone(), true);
             }
         }
     });
@@ -287,55 +286,83 @@ app.controller("zoneCtrl", function($scope, menuData){
             diskZoneData = obtainDiskZoneData(dataByZones);
             cpuZoneData = obtainCpuZoneData(dataByZones);
             console.log(memoryZoneData);
+            if(runDrawFunct){
+                redrawGraphs();
+            }
         } else if(menuData.getFilter() == "Over Allocated"){
             filterByOverAllocated();
         }
-
-        if(runDrawFunct){
-            redrawGraphs();
-        } else{
-        }
     }
-
-
 
     $scope.filterZone("All Zones", false);
 
     function filterByOverAllocated(){
-        var overallocatedMemoryData = [["Hypervisor", "Overage Amt"]];
-        var overallocatedDiskData = [["Hypervisor", "Overage Amt"]];
-        var overallocatedCpuData = [["Hypervisor", "Overage Amt"]];
+        var overallocatedMemoryData = [
+            {
+                key: "Memory Overage Amt",
+                bar: true,
+                values: []
+            },
+            {
+                key: "Testing",
+                values: []
+            }
+        ];
+        var overallocatedDiskData = [
+            {
+                key: "Disk Overage Amt",
+                bar: true,
+                values: []
+            },
+            {
+                key: "Test",
+                values: []
+            }
+        ];
+        var overallocatedCpuData = [
+            {
+                key: "Cpu Overage Amt",
+                bar: true,
+                values: []
+            },
+            {
+                key: "Test",
+                values: []
+            }
+        ];
         for(let i = 0; i < dataByZones.length; i++){
             //check memory values
             if(dataByZones[i].memory_mb < dataByZones[i].memory_mb_used){
                 var mem = [];
                 mem.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 mem.push(dataByZones[i].memory_mb_used - dataByZones[i].memory_mb);
-                overallocatedMemoryData.push(mem);
+                overallocatedMemoryData[0].values.push(mem);
             }
             if(dataByZones[i].free_disk_gb < 0){
                 var disk = [];
                 disk.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 disk.push(Math.abs(dataByZones[i].free_disk_gb));
-                overallocatedDiskData.push(disk);
+                overallocatedDiskData[0].values.push(disk);
             }
             if(dataByZones[i].vcpus < dataByZones[i].vcpus_used){
                 var vcpu = [];
                 vcpu.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 vcpu.push(dataByZones[i].vcpus_used - dataByZones[i].vcpus);
-                overallocatedCpuData.push(vcpu);
+                overallocatedCpuData[0].values.push(vcpu);
             }
         }
 
         //now set the charts data & title fields
         memoryZoneTitle = "Memory Overallocated";
         memoryZoneData = overallocatedMemoryData;
+        console.log(JSON.stringify(memoryZoneData));
 
         cpuZoneTitle = "Cpu Overallocated";
         cpuZoneData = overallocatedCpuData;
 
         diskZoneTitle = "Disk Overallocated";
         diskZoneData = overallocatedDiskData;
+        redrawGraphs();
     }
 
     function addGraphs(){
@@ -540,6 +567,8 @@ app.controller("hypCtrl", function($scope, menuData){
             }
         }
     });
+
+
 });
 
 
