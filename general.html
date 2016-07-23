@@ -6,11 +6,6 @@
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/general.css" rel="stylesheet">
-
-    <link href="css/zoneView.css" rel="stylesheet">
-    <link href="css/hypervisorView.css" rel="stylesheet">
-    <link href="d3/nv.d3.css" rel="stylesheet">
-
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js" ></script>
 
@@ -25,8 +20,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.2/d3.min.js" charset="utf-8"></script>
     <script src="d3/nv.d3.js"></script>
 
-    <!--<script src="radialChart/lib/vizuly_core.min.js"></script>
-    <script src="radialChart/lib/vizuly_radialprogress.min.js"></script>-->
+    <link href="css/zoneView.css" rel="stylesheet">
+    <link href="d3/nv.d3.css" rel="stylesheet">
 </head>
 <body ng-app="myApp">
 
@@ -69,19 +64,14 @@
                </ul>
            </div>
            <div class="btn-group">
-           <div class="container-fluid typeahead-demo">
-               <pre>Hypervisor Selected: {{hyp | json}}</pre>
-               <input type = "text" ng-model = "hyp" uib-typeahead = "hypervisor for hypervisor in hyps | filter:$viewValue | limitTo:8" class="form-control">
-           </div>
-               <!--<ui-select ng-model="hyp" theme="select2" ng-disabled="ctrl.disabled" style="min-width: 300px;" title="Choose a hypervisor">
-                   <ui-select-match placeholder="Select a hypervisor...">{{hyp}}</ui-select-match>
-                   <ui-select-choices repeat="hyp in hyps | propsFilter: {hyp: $select.search}" position='down'>
-                       <div ng-bind-html="hyp | highlight: $select.search"></div>
-                       <small>
-                           {{hyp}}
-                       </small>
-                   </ui-select-choices>
-               </ui-select>-->
+
+               <div ng-controller = "TypeaheadCtrl">
+
+                    <div class="container-fluid typeahead-demo">
+                        <pre>Hypervisor Selected: {{selected | json}}</pre>
+                        <input type = "text" ng-model = "selected" uib-typeahead = "hypervisor for hypervisor in hypervisors | filter:$viewValue | limitTo:8" class="form-control">
+                    </div>
+                </div>
 
            </div>
            <div class="btn-group">
@@ -123,11 +113,10 @@
    </div>
    <div class="view" ng-controller="hypCtrl as hyp" ng-show="hypShow">
        Hypervisor View
-        <div id="radarChartBody">
-            <div id="radarChart"></div>
-        </div>
+       <div id="chartHyp">
+           <svg></svg>
+       </div>
    </div>
-   <script src="js/radarChart.js"></script>
     <script src="js/jquery.js"></script>
 
     <script src="js/bootstrap.min.js"></script>
