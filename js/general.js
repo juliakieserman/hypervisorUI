@@ -2,7 +2,7 @@
  * Created by kw741q on 7/15/2016.
  */
 
-var app = angular.module ( 'myApp' , ['ngAnimate', 'ngRoute', 'ui.bootstrap']);
+var app = angular.module ( 'myApp' , ['ngAnimate', 'ngRoute', 'ui.bootstrap', 'ngSanitize', 'ui.select']);
 
 /*app.config(function($routeProvider){
     $routeProvider
@@ -73,6 +73,7 @@ app.factory('menuData', function(){
 
 app.controller("menuCtrl", function($scope, menuData){
     //current selection:
+
     $scope.genClass = 'activeView';
     $scope.env = "All Environments";
     $scope.envClass = '';
@@ -109,7 +110,7 @@ app.controller("menuCtrl", function($scope, menuData){
         }
         menuData.setActive(active);
     }
-    $scope.setEnv = function(env){
+    /*$scope.setEnv = function(env){
         if(env != $scope.env){
             $scope.env = env;
             $scope.zone = "All Zones";
@@ -119,8 +120,19 @@ app.controller("menuCtrl", function($scope, menuData){
             menuData.setHypervisor("All Hyp");
             filterCriteria(env, "All Zones", "All Hypervisors");
         }
-    }
-    $scope.setZone = function(zone){
+    }*/
+    $scope.$watch(function() {return $scope.env}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            $scope.zone = "All Zones";
+            $scope.hyp = "All Hypervisors";
+            menuData.setEnvironment($scope.env);
+            menuData.setZone("All Zones");
+            menuData.setHypervisor("All Hyp");
+            filterCriteria($scope.env, "All Zones", "All Hypervisors");
+        }
+    });
+    /*$scope.setZone = function(zone){
+        console.log(zone);
         if(zone != $scope.zone){
             $scope.zone = zone;
             $scope.hyp = "All Hypervisors";
@@ -128,7 +140,15 @@ app.controller("menuCtrl", function($scope, menuData){
             menuData.setHypervisor("All Hyp");
             filterCriteria($scope.env, zone, "All Hypervisors");
         }
-    }
+    }*/
+    $scope.$watch(function() {return $scope.zone}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            $scope.hyp = "All Hypervisors";
+            menuData.setZone($scope.zone);
+            menuData.setHypervisor("All Hyp");
+            filterCriteria($scope.env, $scope.zone, "All Hypervisors");
+        }
+    });
     $scope.$watch(function(){ return $scope.hyp;}, function(newValue, oldValue){
        if(newValue != oldValue){
            menuData.setHypervisor($scope.hyp);
@@ -140,6 +160,10 @@ app.controller("menuCtrl", function($scope, menuData){
             menuData.setHypervisor(hyp);
         }
     }*/
+    this.onSelectCallback = function(item, model){
+        console.log(item);
+        console.log(model);
+    }
     $scope.setFilter = function(filter){
         menuData.setFilter(filter);
         $scope.filter = filter;
@@ -171,8 +195,11 @@ app.controller("menuCtrl", function($scope, menuData){
                 hyps.push(hyp);
             }
         }
+        envs.unshift("All Environments");
         $scope.envs = envs;
+        zones.unshift("All Zones");
         $scope.zones = zones;
+        hyps.unshift("All Hypervisors");
         $scope.hyps = hyps;
     }
 });
@@ -616,58 +643,7 @@ app.controller("hypCtrl", function($scope, menuData){
         var colorscale = d3.scale.category10();
 
 //Legend titles
-        var LegendOptions = ['Smartphone','Tablet'];
-
-//Data
-        var d = [
-            [
-                {axis:"Email",value:0.59},
-                {axis:"Social Networks",value:1.5},
-                {axis:"Internet Banking",value:0.42},
-                {axis:"News Sportsites",value:0.34},
-                {axis:"Search Engine",value:0.48},
-                {axis:"View Shopping sites",value:0.14},
-                {axis:"Paying Online",value:0.11},
-                {axis:"Buy Online",value:0.05},
-                {axis:"Stream Music",value:0.07},
-                {axis:"Online Gaming",value:0.12},
-                {axis:"Navigation",value:0.27},
-                {axis:"App connected to TV program",value:0.03},
-                {axis:"Offline Gaming",value:0.12},
-                {axis:"Photo Video",value:0.4},
-                {axis:"Reading",value:0.03},
-                {axis:"Listen Music",value:0.22},
-                {axis:"Watch TV",value:0.03},
-                {axis:"TV Movies Streaming",value:0.03},
-                {axis:"Listen Radio",value:0.07},
-                {axis:"Sending Money",value:0.18},
-                {axis:"Other",value:0.07},
-                {axis:"Use less Once week",value:0.08}
-            ],[
-                {axis:"Email",value:0.48},
-                {axis:"Social Networks",value:0.41},
-                {axis:"Internet Banking",value:0.27},
-                {axis:"News Sportsites",value:0.28},
-                {axis:"Search Engine",value:0.46},
-                {axis:"View Shopping sites",value:0.29},
-                {axis:"Paying Online",value:0.11},
-                {axis:"Buy Online",value:0.14},
-                {axis:"Stream Music",value:0.05},
-                {axis:"Online Gaming",value:0.19},
-                {axis:"Navigation",value:0.14},
-                {axis:"App connected to TV program",value:0.06},
-                {axis:"Offline Gaming",value:0.24},
-                {axis:"Photo Video",value:0.17},
-                {axis:"Reading",value:0.15},
-                {axis:"Listen Music",value:0.12},
-                {axis:"Watch TV",value:0.1},
-                {axis:"TV Movies Streaming",value:0.14},
-                {axis:"Listen Radio",value:0.06},
-                {axis:"Sending Money",value:0.16},
-                {axis:"Other",value:0.07},
-                {axis:"Use less Once week",value:0.17}
-            ]
-        ];
+        var LegendOptions = [hypervisorChosen];
 
 //Options for the Radar chart, other than default
         var mycfg = {
