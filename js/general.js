@@ -216,17 +216,145 @@ app.controller("genCtrl", function($scope, menuData){
     });
 });
 app.controller("envCtrl", function($scope, menuData){
+   app.controller("envCtrl", function($scope, menuData){
     $scope.envShow = false;
+
+    var envData = [];
+    var envChartData = [];
+    var envThresholds = [];
+    var thresholdFlags = [];
+    var envChosen = "All Environments";
+
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
         if(newValue !== oldValue){
             if(newValue == "env"){
                 $scope.envShow = true;
+                fillEnvThresholds();
+                drawEnvGraph();
             } else{
                 $scope.envShow = false;
             }
         }
     });
+
+    $scope.$watch(function() { return menuData.getEnvironment(); }, function(newValue, oldValue){
+        if(newValue !== oldValue){
+            if(newValue == "All Environments"){
+                envChosen = newValue;
+            } else{
+                envChosen = newValue;
+            }
+
+            obtainEnvChartData;
+            drawEnvGraph();
+        }
+    });
+
+    function drawEnvGraph(flag) {
+
+        clearArray();
+        obtainEnvChartData();
+
+        nv.addGraph(function() {
+            var chart = nv.models.discreteBarChart()
+                .x(function(d) { return d.label })
+                .y(function(d) { return d.value })
+                .staggerLabels(true)
+                .showValues(true)
+
+            var svg = d3.select('#envChart svg')
+                .datum(envChartData)
+                .transition().duration(500)
+                .call(chart)
+
+
+            nv.utils.windowResize(chart.update);
+
+            return chart;
+        });
+
+    }
+
+    function fillEnvThresholds() {
+
+        envThresholds[0] = 0;
+        envThresholds[1] = 0;
+        envThresholds[2] = 0;
+
+        for (i = 0; i < myDataArr.length; i++) {
+            envThresholds[0] += myDataArr[i].memory_mb;
+            envThresholds[1] += myDataArr[i].local_gb;
+            envThresholds[2] += myDataArr[i].free_disk_gb + myDataArr[i].local_gb;
+        }
+    }
+
+    function getEnvChosenData(){
+
+        if (envChosen == "All Environments") {
+            for (i=0; i < 300; i++) {
+                envData[0] += myDataArr[i].memory_mb_used;
+                envData[1] += myDataArr[i].local_gb;
+                envData[2] += myDataArr[i].vcpus_used;
+            }
+        } else {
+            for(i = 0; i < 300; i++){
+                console.log("did I enter here?");
+                if (myDataArr[i].environment == envChosen) {
+                    console.log("found one!");
+                    envData[0] += myDataArr[i].memory_mb_used;
+                    envData[1] += myDataArr[i].local_gb;
+                    envData[2] += myDataArr[i].vcpus_used;
+                }
+            }
+        }
+    };
+
+    function clearArray() {
+        //initialize
+        envData[0] = 0;
+        envData[1] = 0;
+        envData[2] = 0;
+    }
+
+
+    function obtainEnvChartData(){
+
+        getEnvChosenData();
+
+        for (i=0; i < envThresholds.length; i++) {
+
+            if (envThresholds[i] <= envChartData[i]) {
+                thresholdFlags[i] = true;
+            }
+            else {
+                thresholdFlags[i] = false;
+            }
+        }
+
+        envChartData =  [
+            {
+                "values": [
+                    {
+                        "label" : "Memory" ,
+                        "value" : envData[0]
+                    } ,
+                    {
+                        "label" : "Disk Usage (GB)" ,
+                        "value" : envData[1]
+                    } ,
+                    {
+                        "label" : "vCPUs" ,
+                        "value" : envData[2]
+                    }
+                ]
+            }
+        ]
+
+    }
+
+
 });
+
 app.controller("zoneCtrl", function($scope, menuData){
 
     $scope.zoneShow = false;
@@ -714,6 +842,7 @@ app.controller("hypCtrl", function($scope, menuData){
 
 var myDataArr = [
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c002.dpa1.cci.att.com",
         "host_ip":"135.110.113.78",
@@ -731,6 +860,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c003.dpa1.cci.att.com",
         "host_ip":"135.110.113.79",
@@ -748,6 +878,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c010.dpa1.cci.att.com",
         "host_ip":"135.110.113.77",
@@ -765,6 +896,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c012.dpa1.cci.att.com",
         "host_ip":"135.110.113.89",
@@ -782,6 +914,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c015.dpa1.cci.att.com",
         "host_ip":"135.110.113.91",
@@ -799,6 +932,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c016.dpa1.cci.att.com",
         "host_ip":"135.110.113.93",
@@ -816,6 +950,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c004.dpa1.cci.att.com",
         "host_ip":"135.110.113.80",
@@ -833,6 +968,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c005.dpa1.cci.att.com",
         "host_ip":"135.110.113.81",
@@ -850,6 +986,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c006.dpa1.cci.att.com",
         "host_ip":"135.110.113.82",
@@ -867,6 +1004,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c007.dpa1.cci.att.com",
         "host_ip":"135.110.113.83",
@@ -884,6 +1022,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c011.dpa1.cci.att.com",
         "host_ip":"135.110.113.86",
@@ -901,6 +1040,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c017.dpa1.cci.att.com",
         "host_ip":"135.110.113.87",
@@ -918,6 +1058,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c018.dpa1.cci.att.com",
         "host_ip":"135.110.113.92",
@@ -935,6 +1076,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c008.dpa1.cci.att.com",
         "host_ip":"135.110.113.84",
@@ -952,6 +1094,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c014.dpa1.cci.att.com",
         "host_ip":"135.110.113.90",
@@ -969,6 +1112,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c009.dpa1.cci.att.com",
         "host_ip":"135.110.113.85",
@@ -986,6 +1130,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c013.dpa1.cci.att.com",
         "host_ip":"135.110.113.88",
@@ -1003,6 +1148,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA1.1",
         "hypervisor_hostname":"dpa1r10c019.dpa1.cci.att.com",
         "host_ip":"135.110.113.76",
@@ -1020,6 +1166,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c002.dpa3.cci.att.com",
         "host_ip":"135.144.30.84",
@@ -1037,6 +1184,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c001.dpa3.cci.att.com",
         "host_ip":"135.144.30.89",
@@ -1054,6 +1202,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c005.dpa3.cci.att.com",
         "host_ip":"135.144.30.81",
@@ -1071,6 +1220,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c008.dpa3.cci.att.com",
         "host_ip":"135.144.30.79",
@@ -1088,6 +1238,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c003.dpa3.cci.att.com",
         "host_ip":"135.144.30.87",
@@ -1105,6 +1256,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c004.dpa3.cci.att.com",
         "host_ip":"135.144.30.82",
@@ -1122,6 +1274,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c006.dpa3.cci.att.com",
         "host_ip":"135.144.30.86",
@@ -1139,6 +1292,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c007.dpa3.cci.att.com",
         "host_ip":"135.144.30.85",
@@ -1156,6 +1310,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c009.dpa3.cci.att.com",
         "host_ip":"135.144.30.93",
@@ -1173,6 +1328,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c010.dpa3.cci.att.com",
         "host_ip":"135.144.30.90",
@@ -1190,6 +1346,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c012.dpa3.cci.att.com",
         "host_ip":"135.144.30.76",
@@ -1207,6 +1364,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c015.dpa3.cci.att.com",
         "host_ip":"135.144.30.80",
@@ -1224,6 +1382,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c014.dpa3.cci.att.com",
         "host_ip":"135.144.30.78",
@@ -1241,6 +1400,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c018.dpa3.cci.att.com",
         "host_ip":"135.144.30.91",
@@ -1258,6 +1418,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c019.dpa3.cci.att.com",
         "host_ip":"135.144.30.88",
@@ -1275,6 +1436,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c011.dpa3.cci.att.com",
         "host_ip":"135.144.30.92",
@@ -1292,6 +1454,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c013.dpa3.cci.att.com",
         "host_ip":"135.144.30.77",
@@ -1309,6 +1472,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c001.dpa3.cci.att.com",
         "host_ip":"135.144.30.144",
@@ -1326,6 +1490,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c003.dpa3.cci.att.com",
         "host_ip":"135.144.30.141",
@@ -1343,6 +1508,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c005.dpa3.cci.att.com",
         "host_ip":"135.144.30.143",
@@ -1360,6 +1526,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c009.dpa3.cci.att.com",
         "host_ip":"135.144.30.142",
@@ -1377,6 +1544,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c002.dpa3.cci.att.com",
         "host_ip":"135.144.30.154",
@@ -1394,6 +1562,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c008.dpa3.cci.att.com",
         "host_ip":"135.144.30.146",
@@ -1411,6 +1580,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c006.dpa3.cci.att.com",
         "host_ip":"135.144.30.140",
@@ -1428,6 +1598,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c004.dpa3.cci.att.com",
         "host_ip":"135.144.30.156",
@@ -1445,6 +1616,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c007.dpa3.cci.att.com",
         "host_ip":"135.144.30.145",
@@ -1462,6 +1634,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c005.dpa3.cci.att.com",
         "host_ip":"135.144.30.14",
@@ -1479,6 +1652,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c002.dpa3.cci.att.com",
         "host_ip":"135.144.30.17",
@@ -1496,6 +1670,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c004.dpa3.cci.att.com",
         "host_ip":"135.144.30.12",
@@ -1513,6 +1688,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c007.dpa3.cci.att.com",
         "host_ip":"135.144.30.16",
@@ -1530,6 +1706,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c008.dpa3.cci.att.com",
         "host_ip":"135.144.30.18",
@@ -1547,6 +1724,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c009.dpa3.cci.att.com",
         "host_ip":"135.144.30.19",
@@ -1564,6 +1742,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c018.dpa3.cci.att.com",
         "host_ip":"135.144.30.28",
@@ -1581,6 +1760,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c012.dpa3.cci.att.com",
         "host_ip":"135.144.30.22",
@@ -1598,6 +1778,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c011.dpa3.cci.att.com",
         "host_ip":"135.144.30.21",
@@ -1615,6 +1796,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c017.dpa3.cci.att.com",
         "host_ip":"135.144.30.27",
@@ -1632,6 +1814,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c013.dpa3.cci.att.com",
         "host_ip":"135.144.30.23",
@@ -1649,6 +1832,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c010.dpa3.cci.att.com",
         "host_ip":"135.144.30.20",
@@ -1666,6 +1850,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c014.dpa3.cci.att.com",
         "host_ip":"135.144.30.24",
@@ -1683,6 +1868,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c016.dpa3.cci.att.com",
         "host_ip":"135.144.30.26",
@@ -1700,6 +1886,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c019.dpa3.cci.att.com",
         "host_ip":"135.144.30.29",
@@ -1717,6 +1904,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c015.dpa3.cci.att.com",
         "host_ip":"135.144.30.25",
@@ -1734,6 +1922,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c019.dpa3.cci.att.com",
         "host_ip":"135.144.30.148",
@@ -1751,6 +1940,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c018.dpa3.cci.att.com",
         "host_ip":"135.144.30.149",
@@ -1768,6 +1958,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c011.dpa3.cci.att.com",
         "host_ip":"135.144.30.152",
@@ -1785,6 +1976,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c015.dpa3.cci.att.com",
         "host_ip":"135.144.30.147",
@@ -1802,6 +1994,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c014.dpa3.cci.att.com",
         "host_ip":"135.144.30.150",
@@ -1819,6 +2012,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c012.dpa3.cci.att.com",
         "host_ip":"135.144.30.157",
@@ -1836,6 +2030,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c013.dpa3.cci.att.com",
         "host_ip":"135.144.30.158",
@@ -1853,6 +2048,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c017.dpa3.cci.att.com",
         "host_ip":"135.144.30.83",
@@ -1870,6 +2066,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c008.dpa3.cci.att.com",
         "host_ip":"135.144.30.211",
@@ -1887,6 +2084,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c003.dpa3.cci.att.com",
         "host_ip":"135.144.30.206",
@@ -1904,6 +2102,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c004.dpa3.cci.att.com",
         "host_ip":"135.144.30.207",
@@ -1921,6 +2120,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c011.dpa3.cci.att.com",
         "host_ip":"135.144.30.214",
@@ -1938,6 +2138,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c002.dpa3.cci.att.com",
         "host_ip":"135.144.30.205",
@@ -1955,6 +2156,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c007.dpa3.cci.att.com",
         "host_ip":"135.144.30.210",
@@ -1972,6 +2174,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c006.dpa3.cci.att.com",
         "host_ip":"135.144.30.209",
@@ -1989,6 +2192,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c009.dpa3.cci.att.com",
         "host_ip":"135.144.30.212",
@@ -2006,6 +2210,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c001.dpa3.cci.att.com",
         "host_ip":"135.144.30.204",
@@ -2023,6 +2228,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c005.dpa3.cci.att.com",
         "host_ip":"135.144.30.208",
@@ -2040,6 +2246,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c010.dpa3.cci.att.com",
         "host_ip":"135.144.30.213",
@@ -2057,6 +2264,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c017.dpa3.cci.att.com",
         "host_ip":"135.144.30.218",
@@ -2074,6 +2282,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c014.dpa3.cci.att.com",
         "host_ip":"135.144.30.217",
@@ -2091,6 +2300,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c013.dpa3.cci.att.com",
         "host_ip":"135.144.30.216",
@@ -2108,6 +2318,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c012.dpa3.cci.att.com",
         "host_ip":"135.144.30.215",
@@ -2125,6 +2336,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c015.dpa3.cci.att.com",
         "host_ip":"135.144.30.220",
@@ -2142,6 +2354,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c019.dpa3.cci.att.com",
         "host_ip":"135.144.30.222",
@@ -2159,6 +2372,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c007.dpa3.cci.att.com",
         "host_ip":"135.144.31.14",
@@ -2176,6 +2390,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c008.dpa3.cci.att.com",
         "host_ip":"135.144.31.17",
@@ -2193,6 +2408,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c004.dpa3.cci.att.com",
         "host_ip":"135.144.31.19",
@@ -2210,6 +2426,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c005.dpa3.cci.att.com",
         "host_ip":"135.144.31.13",
@@ -2227,6 +2444,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c009.dpa3.cci.att.com",
         "host_ip":"135.144.31.16",
@@ -2244,6 +2462,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c010.dpa3.cci.att.com",
         "host_ip":"135.144.31.12",
@@ -2261,6 +2480,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c003.dpa3.cci.att.com",
         "host_ip":"135.144.31.15",
@@ -2278,6 +2498,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c001.dpa3.cci.att.com",
         "host_ip":"135.144.31.20",
@@ -2295,6 +2516,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c002.dpa3.cci.att.com",
         "host_ip":"135.144.31.18",
@@ -2312,6 +2534,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c017.dpa3.cci.att.com",
         "host_ip":"135.144.31.27",
@@ -2329,6 +2552,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c011.dpa3.cci.att.com",
         "host_ip":"135.144.31.21",
@@ -2346,6 +2570,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c015.dpa3.cci.att.com",
         "host_ip":"135.144.31.25",
@@ -2363,6 +2588,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c012.dpa3.cci.att.com",
         "host_ip":"135.144.31.22",
@@ -2380,6 +2606,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c014.dpa3.cci.att.com",
         "host_ip":"135.144.31.24",
@@ -2397,6 +2624,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c019.dpa3.cci.att.com",
         "host_ip":"135.144.31.29",
@@ -2414,6 +2642,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c013.dpa3.cci.att.com",
         "host_ip":"135.144.31.23",
@@ -2431,6 +2660,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c013.dpa3.cci.att.com",
         "host_ip":"135.144.31.77",
@@ -2448,6 +2678,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c003.dpa3.cci.att.com",
         "host_ip":"135.144.31.80",
@@ -2465,6 +2696,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c011.dpa3.cci.att.com",
         "host_ip":"135.144.31.88",
@@ -2482,6 +2714,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c007.dpa3.cci.att.com",
         "host_ip":"135.144.31.84",
@@ -2499,6 +2732,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c017.dpa3.cci.att.com",
         "host_ip":"135.144.31.91",
@@ -2516,6 +2750,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c015.dpa3.cci.att.com",
         "host_ip":"135.144.31.78",
@@ -2533,6 +2768,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c008.dpa3.cci.att.com",
         "host_ip":"135.144.31.85",
@@ -2550,6 +2786,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c014.dpa3.cci.att.com",
         "host_ip":"135.144.31.89",
@@ -2567,6 +2804,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c001.dpa3.cci.att.com",
         "host_ip":"135.144.31.76",
@@ -2584,6 +2822,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c004.dpa3.cci.att.com",
         "host_ip":"135.144.31.81",
@@ -2601,6 +2840,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c005.dpa3.cci.att.com",
         "host_ip":"135.144.31.82",
@@ -2618,6 +2858,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c019.dpa3.cci.att.com",
         "host_ip":"135.144.31.93",
@@ -2635,6 +2876,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c012.dpa3.cci.att.com",
         "host_ip":"135.144.31.94",
@@ -2652,6 +2894,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c009.dpa3.cci.att.com",
         "host_ip":"135.144.31.86",
@@ -2669,6 +2912,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c010.dpa3.cci.att.com",
         "host_ip":"135.144.31.87",
@@ -2686,6 +2930,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c006.dpa3.cci.att.com",
         "host_ip":"135.144.31.83",
@@ -2703,6 +2948,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c002.dpa3.cci.att.com",
         "host_ip":"135.144.31.79",
@@ -2720,6 +2966,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c001.dpa3.cci.att.com",
         "host_ip":"135.144.31.140",
@@ -2737,6 +2984,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c002.dpa3.cci.att.com",
         "host_ip":"135.144.31.141",
@@ -2754,6 +3002,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c005.dpa3.cci.att.com",
         "host_ip":"135.144.31.144",
@@ -2771,6 +3020,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c004.dpa3.cci.att.com",
         "host_ip":"135.144.31.143",
@@ -2788,6 +3038,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c007.dpa3.cci.att.com",
         "host_ip":"135.144.31.146",
@@ -2805,6 +3056,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c010.dpa3.cci.att.com",
         "host_ip":"135.144.31.149",
@@ -2822,6 +3074,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c006.dpa3.cci.att.com",
         "host_ip":"135.144.31.145",
@@ -2839,6 +3092,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c008.dpa3.cci.att.com",
         "host_ip":"135.144.31.147",
@@ -2856,6 +3110,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c009.dpa3.cci.att.com",
         "host_ip":"135.144.31.148",
@@ -2873,6 +3128,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c003.dpa3.cci.att.com",
         "host_ip":"135.144.31.142",
@@ -2890,6 +3146,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c014.dpa3.cci.att.com",
         "host_ip":"135.144.31.153",
@@ -2907,6 +3164,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c011.dpa3.cci.att.com",
         "host_ip":"135.144.31.150",
@@ -2924,6 +3182,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c013.dpa3.cci.att.com",
         "host_ip":"135.144.31.152",
@@ -2941,6 +3200,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c015.dpa3.cci.att.com",
         "host_ip":"135.144.31.154",
@@ -2958,6 +3218,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c017.dpa3.cci.att.com",
         "host_ip":"135.144.31.156",
@@ -2975,6 +3236,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c019.dpa3.cci.att.com",
         "host_ip":"135.144.31.158",
@@ -2992,6 +3254,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c012.dpa3.cci.att.com",
         "host_ip":"135.144.31.151",
@@ -3009,6 +3272,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c002.dpa3.cci.att.com",
         "host_ip":"135.144.31.204",
@@ -3026,6 +3290,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c003.dpa3.cci.att.com",
         "host_ip":"135.144.31.205",
@@ -3043,6 +3308,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c004.dpa3.cci.att.com",
         "host_ip":"135.144.31.206",
@@ -3060,6 +3326,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c010.dpa3.cci.att.com",
         "host_ip":"135.144.31.211",
@@ -3077,6 +3344,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c005.dpa3.cci.att.com",
         "host_ip":"135.144.31.207",
@@ -3094,6 +3362,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c008.dpa3.cci.att.com",
         "host_ip":"135.144.31.209",
@@ -3111,6 +3380,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c006.dpa3.cci.att.com",
         "host_ip":"135.144.31.208",
@@ -3128,6 +3398,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c009.dpa3.cci.att.com",
         "host_ip":"135.144.31.210",
@@ -3145,6 +3416,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c012.dpa3.cci.att.com",
         "host_ip":"135.144.31.213",
@@ -3162,6 +3434,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c013.dpa3.cci.att.com",
         "host_ip":"135.144.31.214",
@@ -3179,6 +3452,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c011.dpa3.cci.att.com",
         "host_ip":"135.144.31.212",
@@ -3196,6 +3470,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c019.dpa3.cci.att.com",
         "host_ip":"135.144.31.220",
@@ -3213,6 +3488,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c017.dpa3.cci.att.com",
         "host_ip":"135.144.31.218",
@@ -3230,6 +3506,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c014.dpa3.cci.att.com",
         "host_ip":"135.144.31.215",
@@ -3247,6 +3524,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c015.dpa3.cci.att.com",
         "host_ip":"135.144.31.216",
@@ -3264,6 +3542,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c004.dpa3.cci.att.com",
         "host_ip":"135.69.100.15",
@@ -3281,6 +3560,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c002.dpa3.cci.att.com",
         "host_ip":"135.69.100.14",
@@ -3298,6 +3578,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c008.dpa3.cci.att.com",
         "host_ip":"135.69.100.19",
@@ -3315,6 +3596,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c009.dpa3.cci.att.com",
         "host_ip":"135.69.100.20",
@@ -3332,6 +3614,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c001.dpa3.cci.att.com",
         "host_ip":"135.69.100.12",
@@ -3349,6 +3632,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c006.dpa3.cci.att.com",
         "host_ip":"135.69.100.17",
@@ -3366,6 +3650,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c007.dpa3.cci.att.com",
         "host_ip":"135.69.100.18",
@@ -3383,6 +3668,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c003.dpa3.cci.att.com",
         "host_ip":"135.69.100.13",
@@ -3400,6 +3686,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c005.dpa3.cci.att.com",
         "host_ip":"135.69.100.16",
@@ -3417,6 +3704,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c011.dpa3.cci.att.com",
         "host_ip":"135.69.100.21",
@@ -3434,6 +3722,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c013.dpa3.cci.att.com",
         "host_ip":"135.69.100.23",
@@ -3451,6 +3740,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c012.dpa3.cci.att.com",
         "host_ip":"135.69.100.22",
@@ -3468,6 +3758,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c014.dpa3.cci.att.com",
         "host_ip":"135.69.100.24",
@@ -3485,6 +3776,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c015.dpa3.cci.att.com",
         "host_ip":"135.69.100.25",
@@ -3502,6 +3794,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c019.dpa3.cci.att.com",
         "host_ip":"135.69.100.29",
@@ -3519,6 +3812,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c012.dpa3.cci.att.com",
         "host_ip":"135.144.29.213",
@@ -3536,6 +3830,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c018.dpa3.cci.att.com",
         "host_ip":"135.144.31.92",
@@ -3553,6 +3848,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c008.dpa3.cci.att.com",
         "host_ip":"135.144.29.212",
@@ -3570,6 +3866,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c009.dpa3.cci.att.com",
         "host_ip":"135.144.29.210",
@@ -3587,6 +3884,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c007.dpa3.cci.att.com",
         "host_ip":"135.144.29.211",
@@ -3604,6 +3902,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c015.dpa3.cci.att.com",
         "host_ip":"135.144.29.217",
@@ -3621,6 +3920,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c018.dpa3.cci.att.com",
         "host_ip":"135.144.30.221",
@@ -3638,6 +3938,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c005.dpa3.cci.att.com",
         "host_ip":"135.144.29.207",
@@ -3655,6 +3956,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c018.dpa3.cci.att.com",
         "host_ip":"135.144.31.28",
@@ -3672,6 +3974,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c003.dpa3.cci.att.com",
         "host_ip":"135.144.29.206",
@@ -3689,6 +3992,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c018.dpa3.cci.att.com",
         "host_ip":"135.144.29.218",
@@ -3706,6 +4010,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c013.dpa3.cci.att.com",
         "host_ip":"135.144.29.216",
@@ -3723,6 +4028,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c019.dpa3.cci.att.com",
         "host_ip":"135.144.29.221",
@@ -3740,6 +4046,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c004.dpa3.cci.att.com",
         "host_ip":"135.144.29.208",
@@ -3757,6 +4064,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c010.dpa3.cci.att.com",
         "host_ip":"135.144.29.222",
@@ -3774,6 +4082,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c002.dpa3.cci.att.com",
         "host_ip":"135.144.29.205",
@@ -3791,6 +4100,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c016.dpa3.cci.att.com",
         "host_ip":"135.144.31.26",
@@ -3808,6 +4118,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c011.dpa3.cci.att.com",
         "host_ip":"135.144.29.214",
@@ -3825,6 +4136,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r20c016.dpa3.cci.att.com",
         "host_ip":"135.144.31.90",
@@ -3842,6 +4154,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c017.dpa3.cci.att.com",
         "host_ip":"135.144.29.219",
@@ -3859,6 +4172,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c016.dpa3.cci.att.com",
         "host_ip":"135.144.29.220",
@@ -3876,6 +4190,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c014.dpa3.cci.att.com",
         "host_ip":"135.144.29.215",
@@ -3893,6 +4208,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r18c016.dpa3.cci.att.com",
         "host_ip":"135.144.30.219",
@@ -3910,6 +4226,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r14c006.dpa3.cci.att.com",
         "host_ip":"135.144.29.209",
@@ -3927,6 +4244,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c016.dpa3.cci.att.com",
         "host_ip":"135.144.31.217",
@@ -3944,6 +4262,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c018.dpa3.cci.att.com",
         "host_ip":"135.144.31.219",
@@ -3961,6 +4280,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c016.dpa3.cci.att.com",
         "host_ip":"135.144.30.151",
@@ -3978,6 +4298,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c016.dpa3.cci.att.com",
         "host_ip":"135.69.100.26",
@@ -3995,6 +4316,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c018.dpa3.cci.att.com",
         "host_ip":"135.69.100.28",
@@ -4012,6 +4334,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c016.dpa3.cci.att.com",
         "host_ip":"135.144.31.155",
@@ -4029,6 +4352,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r21c018.dpa3.cci.att.com",
         "host_ip":"135.144.31.157",
@@ -4046,6 +4370,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c007.dpa3.cci.att.com",
         "host_ip":"135.144.31.221",
@@ -4063,6 +4388,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c010.dpa3.cci.att.com",
         "host_ip":"135.144.30.155",
@@ -4080,6 +4406,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r17c017.dpa3.cci.att.com",
         "host_ip":"135.144.30.153",
@@ -4097,6 +4424,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c003.dpa3.cci.att.com",
         "host_ip":"135.144.30.13",
@@ -4114,6 +4442,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r15c006.dpa3.cci.att.com",
         "host_ip":"135.144.30.15",
@@ -4131,6 +4460,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c017.dpa3.cci.att.com",
         "host_ip":"135.69.100.27",
@@ -4148,6 +4478,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r23c010.dpa3.cci.att.com",
         "host_ip":"135.69.100.30",
@@ -4165,6 +4496,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r16c016.dpa3.cci.att.com",
         "host_ip":"135.144.30.94",
@@ -4182,6 +4514,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r22c001.dpa3.cci.att.com",
         "host_ip":"135.144.31.222",
@@ -4199,6 +4532,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"DPA",
         "zone":"DPA3.1",
         "hypervisor_hostname":"dpa3r19c006.dpa3.cci.att.com",
         "host_ip":"135.144.31.30",
@@ -4216,6 +4550,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c003.ewr2.cci.att.com",
         "host_ip":"135.144.12.145",
@@ -4233,6 +4568,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c002.ewr2.cci.att.com",
         "host_ip":"135.144.12.147",
@@ -4250,6 +4586,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c001.ewr2.cci.att.com",
         "host_ip":"135.144.12.141",
@@ -4267,6 +4604,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c003.ewr2.cci.att.com",
         "host_ip":"135.144.12.215",
@@ -4284,6 +4622,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c001.ewr2.cci.att.com",
         "host_ip":"135.144.12.207",
@@ -4301,6 +4640,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c002.ewr2.cci.att.com",
         "host_ip":"135.144.12.205",
@@ -4318,6 +4658,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c011.ewr2.cci.att.com",
         "host_ip":"135.144.12.208",
@@ -4335,6 +4676,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c015.ewr2.cci.att.com",
         "host_ip":"135.144.12.210",
@@ -4352,6 +4694,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c019.ewr2.cci.att.com",
         "host_ip":"135.144.12.146",
@@ -4369,6 +4712,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c016.ewr2.cci.att.com",
         "host_ip":"135.144.12.140",
@@ -4386,6 +4730,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c018.ewr2.cci.att.com",
         "host_ip":"135.144.12.213",
@@ -4403,6 +4748,8 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c017.ewr2.cci.att.com",
         "host_ip":"135.144.12.212",
@@ -4420,6 +4767,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c014.ewr2.cci.att.com",
         "host_ip":"135.144.12.204",
@@ -4437,6 +4785,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c018.ewr2.cci.att.com",
         "host_ip":"135.144.12.144",
@@ -4454,6 +4803,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c006.ewr2.cci.att.com",
         "host_ip":"135.144.12.206",
@@ -4471,6 +4821,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c009.ewr2.cci.att.com",
         "host_ip":"135.144.12.142",
@@ -4488,6 +4839,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c008.ewr2.cci.att.com",
         "host_ip":"135.144.12.148",
@@ -4505,6 +4857,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c012.ewr2.cci.att.com",
         "host_ip":"135.144.12.157",
@@ -4522,6 +4875,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c007.ewr2.cci.att.com",
         "host_ip":"135.144.12.153",
@@ -4539,6 +4893,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c013.ewr2.cci.att.com",
         "host_ip":"135.144.12.155",
@@ -4556,6 +4911,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c005.ewr2.cci.att.com",
         "host_ip":"135.144.12.150",
@@ -4573,6 +4929,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c011.ewr2.cci.att.com",
         "host_ip":"135.144.12.151",
@@ -4590,6 +4947,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c015.ewr2.cci.att.com",
         "host_ip":"135.144.12.154",
@@ -4607,6 +4965,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c006.ewr2.cci.att.com",
         "host_ip":"135.144.12.143",
@@ -4624,6 +4983,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c004.ewr2.cci.att.com",
         "host_ip":"135.144.12.152",
@@ -4641,6 +5001,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c017.ewr2.cci.att.com",
         "host_ip":"135.144.12.156",
@@ -4658,6 +5019,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c007.ewr2.cci.att.com",
         "host_ip":"135.144.12.214",
@@ -4675,6 +5037,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c009.ewr2.cci.att.com",
         "host_ip":"135.144.12.217",
@@ -4692,6 +5055,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c005.ewr2.cci.att.com",
         "host_ip":"135.144.12.216",
@@ -4709,6 +5073,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c012.ewr2.cci.att.com",
         "host_ip":"135.144.12.219",
@@ -4726,6 +5091,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c010.ewr2.cci.att.com",
         "host_ip":"135.144.12.158",
@@ -4743,6 +5109,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r23c014.ewr2.cci.att.com",
         "host_ip":"135.144.12.149",
@@ -4760,6 +5127,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c004.ewr2.cci.att.com",
         "host_ip":"135.144.12.218",
@@ -4777,6 +5145,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c008.ewr2.cci.att.com",
         "host_ip":"135.144.12.221",
@@ -4794,6 +5163,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c010.ewr2.cci.att.com",
         "host_ip":"135.144.12.220",
@@ -4811,6 +5181,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c019.ewr2.cci.att.com",
         "host_ip":"135.144.12.211",
@@ -4828,6 +5199,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r24c016.ewr2.cci.att.com",
         "host_ip":"135.144.12.209",
@@ -4845,6 +5217,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c003.ewr2.cci.att.com",
         "host_ip":"135.144.13.13",
@@ -4862,6 +5235,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c002.ewr2.cci.att.com",
         "host_ip":"135.144.13.12",
@@ -4879,6 +5253,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c005.ewr2.cci.att.com",
         "host_ip":"135.144.13.15",
@@ -4896,6 +5271,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c006.ewr2.cci.att.com",
         "host_ip":"135.144.13.25",
@@ -4913,6 +5289,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c009.ewr2.cci.att.com",
         "host_ip":"135.144.13.18",
@@ -4930,6 +5307,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c008.ewr2.cci.att.com",
         "host_ip":"135.144.13.17",
@@ -4947,6 +5325,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c010.ewr2.cci.att.com",
         "host_ip":"135.144.13.19",
@@ -4964,6 +5343,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c014.ewr2.cci.att.com",
         "host_ip":"135.144.13.23",
@@ -4981,6 +5361,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c012.ewr2.cci.att.com",
         "host_ip":"135.144.13.21",
@@ -4998,6 +5379,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c013.ewr2.cci.att.com",
         "host_ip":"135.144.13.22",
@@ -5015,6 +5397,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c011.ewr2.cci.att.com",
         "host_ip":"135.144.13.20",
@@ -5032,6 +5415,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c015.ewr2.cci.att.com",
         "host_ip":"135.144.13.24",
@@ -5049,6 +5433,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c017.ewr2.cci.att.com",
         "host_ip":"135.144.13.27",
@@ -5066,6 +5451,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c018.ewr2.cci.att.com",
         "host_ip":"135.144.13.28",
@@ -5083,6 +5469,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c016.ewr2.cci.att.com",
         "host_ip":"135.144.13.26",
@@ -5100,6 +5487,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c007.ewr2.cci.att.com",
         "host_ip":"135.144.13.16",
@@ -5117,6 +5505,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c001.ewr2.cci.att.com",
         "host_ip":"135.144.13.11",
@@ -5134,6 +5523,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c004.ewr2.cci.att.com",
         "host_ip":"135.144.13.14",
@@ -5151,6 +5541,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"EWR",
         "zone":"EWR2.1",
         "hypervisor_hostname":"ewr2r25c019.ewr2.cci.att.com",
         "host_ip":"135.144.13.29",
@@ -5168,6 +5559,7 @@ var myDataArr = [
         "status":"disabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c010.kgm1.cci.att.com",
         "host_ip":"32.50.49.89",
@@ -5185,6 +5577,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c006.kgm1.cci.att.com",
         "host_ip":"32.50.49.87",
@@ -5202,6 +5595,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c011.kgm1.cci.att.com",
         "host_ip":"32.50.49.92",
@@ -5219,6 +5613,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c005.kgm1.cci.att.com",
         "host_ip":"32.50.49.94",
@@ -5236,6 +5631,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c016.kgm1.cci.att.com",
         "host_ip":"32.50.49.96",
@@ -5253,6 +5649,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c012.kgm1.cci.att.com",
         "host_ip":"32.50.49.95",
@@ -5270,6 +5667,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c009.kgm1.cci.att.com",
         "host_ip":"32.50.49.88",
@@ -5287,6 +5685,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c017.kgm1.cci.att.com",
         "host_ip":"32.50.49.101",
@@ -5304,6 +5703,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c015.kgm1.cci.att.com",
         "host_ip":"32.50.49.98",
@@ -5321,6 +5721,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c014.kgm1.cci.att.com",
         "host_ip":"32.50.49.103",
@@ -5338,6 +5739,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c019.kgm1.cci.att.com",
         "host_ip":"32.50.49.104",
@@ -5355,6 +5757,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c020.kgm1.cci.att.com",
         "host_ip":"32.50.49.100",
@@ -5372,6 +5775,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c007.kgm1.cci.att.com",
         "host_ip":"32.50.49.90",
@@ -5389,6 +5793,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c008.kgm1.cci.att.com",
         "host_ip":"32.50.49.91",
@@ -5406,6 +5811,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c018.kgm1.cci.att.com",
         "host_ip":"32.50.49.97",
@@ -5423,6 +5829,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c021.kgm1.cci.att.com",
         "host_ip":"32.50.49.99",
@@ -5440,6 +5847,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c003.kgm1.cci.att.com",
         "host_ip":"32.50.49.93",
@@ -5457,6 +5865,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c004.kgm1.cci.att.com",
         "host_ip":"32.50.49.102",
@@ -5474,6 +5883,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r01c013.kgm1.cci.att.com",
         "host_ip":"32.50.49.105",
@@ -5491,6 +5901,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c003.kgm1.cci.att.com",
         "host_ip":"32.50.49.151",
@@ -5508,6 +5919,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c016.kgm1.cci.att.com",
         "host_ip":"32.50.49.153",
@@ -5525,6 +5937,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c006.kgm1.cci.att.com",
         "host_ip":"32.50.49.154",
@@ -5542,6 +5955,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c007.kgm1.cci.att.com",
         "host_ip":"32.50.49.155",
@@ -5559,6 +5973,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c020.kgm1.cci.att.com",
         "host_ip":"32.50.49.159",
@@ -5576,6 +5991,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c017.kgm1.cci.att.com",
         "host_ip":"32.50.49.157",
@@ -5593,6 +6009,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c013.kgm1.cci.att.com",
         "host_ip":"32.50.49.160",
@@ -5610,6 +6027,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c011.kgm1.cci.att.com",
         "host_ip":"32.50.49.161",
@@ -5627,6 +6045,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c009.kgm1.cci.att.com",
         "host_ip":"32.50.49.163",
@@ -5644,6 +6063,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c007.kgm1.cci.att.com",
         "host_ip":"32.50.49.220",
@@ -5661,6 +6081,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c017.kgm1.cci.att.com",
         "host_ip":"32.50.49.221",
@@ -5678,6 +6099,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c013.kgm1.cci.att.com",
         "host_ip":"32.50.49.219",
@@ -5695,6 +6117,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c008.kgm1.cci.att.com",
         "host_ip":"32.50.49.216",
@@ -5712,6 +6135,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c012.kgm1.cci.att.com",
         "host_ip":"32.50.49.162",
@@ -5729,6 +6153,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c011.kgm1.cci.att.com",
         "host_ip":"32.50.49.225",
@@ -5746,6 +6171,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c018.kgm1.cci.att.com",
         "host_ip":"32.50.49.165",
@@ -5763,6 +6189,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c019.kgm1.cci.att.com",
         "host_ip":"32.50.49.228",
@@ -5780,6 +6207,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c014.kgm1.cci.att.com",
         "host_ip":"32.50.49.224",
@@ -5797,6 +6225,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c005.kgm1.cci.att.com",
         "host_ip":"32.50.49.226",
@@ -5814,6 +6243,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c008.kgm1.cci.att.com",
         "host_ip":"32.50.49.164",
@@ -5831,6 +6261,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c005.kgm1.cci.att.com",
         "host_ip":"32.50.49.167",
@@ -5848,6 +6279,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c020.kgm1.cci.att.com",
         "host_ip":"32.50.50.26",
@@ -5865,6 +6297,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c008.kgm1.cci.att.com",
         "host_ip":"32.50.50.23",
@@ -5882,6 +6315,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c006.kgm1.cci.att.com",
         "host_ip":"32.50.49.218",
@@ -5899,6 +6333,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c015.kgm1.cci.att.com",
         "host_ip":"32.50.49.230",
@@ -5916,6 +6351,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c010.kgm1.cci.att.com",
         "host_ip":"32.50.49.223",
@@ -5933,6 +6369,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c021.kgm1.cci.att.com",
         "host_ip":"32.50.49.229",
@@ -5950,6 +6387,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c012.kgm1.cci.att.com",
         "host_ip":"32.50.49.227",
@@ -5967,6 +6405,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c018.kgm1.cci.att.com",
         "host_ip":"32.50.49.232",
@@ -5984,6 +6423,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c021.kgm1.cci.att.com",
         "host_ip":"32.50.50.31",
@@ -6001,6 +6441,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c019.kgm1.cci.att.com",
         "host_ip":"32.50.49.168",
@@ -6018,6 +6459,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c016.kgm1.cci.att.com",
         "host_ip":"32.50.50.24",
@@ -6035,6 +6477,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c007.kgm1.cci.att.com",
         "host_ip":"32.50.50.29",
@@ -6052,6 +6495,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c019.kgm1.cci.att.com",
         "host_ip":"32.50.50.30",
@@ -6069,6 +6513,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c006.kgm1.cci.att.com",
         "host_ip":"32.50.50.36",
@@ -6086,6 +6531,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c013.kgm1.cci.att.com",
         "host_ip":"32.50.50.37",
@@ -6103,6 +6549,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c020.kgm1.cci.att.com",
         "host_ip":"32.50.49.231",
@@ -6120,6 +6567,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c004.kgm1.cci.att.com",
         "host_ip":"32.50.49.152",
@@ -6137,6 +6585,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c015.kgm1.cci.att.com",
         "host_ip":"32.50.49.156",
@@ -6154,6 +6603,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c021.kgm1.cci.att.com",
         "host_ip":"32.50.49.158",
@@ -6171,6 +6621,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c009.kgm1.cci.att.com",
         "host_ip":"32.50.49.217",
@@ -6188,6 +6639,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c016.kgm1.cci.att.com",
         "host_ip":"32.50.49.215",
@@ -6205,6 +6657,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c003.kgm1.cci.att.com",
         "host_ip":"32.50.49.222",
@@ -6222,6 +6675,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c003.kgm1.cci.att.com",
         "host_ip":"32.50.50.25",
@@ -6239,6 +6693,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c009.kgm1.cci.att.com",
         "host_ip":"32.50.50.27",
@@ -6256,6 +6711,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c014.kgm1.cci.att.com",
         "host_ip":"32.50.49.166",
@@ -6273,6 +6729,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c004.kgm1.cci.att.com",
         "host_ip":"32.50.50.28",
@@ -6290,6 +6747,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c014.kgm1.cci.att.com",
         "host_ip":"32.50.50.34",
@@ -6307,6 +6765,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c015.kgm1.cci.att.com",
         "host_ip":"32.50.50.32",
@@ -6324,6 +6783,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c012.kgm1.cci.att.com",
         "host_ip":"32.50.50.35",
@@ -6341,6 +6801,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c017.kgm1.cci.att.com",
         "host_ip":"32.50.50.33",
@@ -6358,6 +6819,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c011.kgm1.cci.att.com",
         "host_ip":"32.50.50.39",
@@ -6375,6 +6837,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r03c004.kgm1.cci.att.com",
         "host_ip":"32.50.49.233",
@@ -6392,6 +6855,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c018.kgm1.cci.att.com",
         "host_ip":"32.50.50.40",
@@ -6409,6 +6873,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c005.kgm1.cci.att.com",
         "host_ip":"32.50.50.38",
@@ -6426,6 +6891,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r02c010.kgm1.cci.att.com",
         "host_ip":"32.50.49.169",
@@ -6443,6 +6909,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c008.kgm1.cci.att.com",
         "host_ip":"32.50.53.152",
@@ -6460,6 +6927,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c004.kgm1.cci.att.com",
         "host_ip":"32.50.54.24",
@@ -6477,6 +6945,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c016.kgm1.cci.att.com",
         "host_ip":"32.50.53.218",
@@ -6494,6 +6963,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c011.kgm1.cci.att.com",
         "host_ip":"32.50.53.156",
@@ -6511,6 +6981,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c019.kgm1.cci.att.com",
         "host_ip":"32.50.53.154",
@@ -6528,6 +6999,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c005.kgm1.cci.att.com",
         "host_ip":"32.50.53.151",
@@ -6545,6 +7017,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c012.kgm1.cci.att.com",
         "host_ip":"32.50.53.220",
@@ -6562,6 +7035,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c006.kgm1.cci.att.com",
         "host_ip":"32.50.54.23",
@@ -6579,6 +7053,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c008.kgm1.cci.att.com",
         "host_ip":"32.50.53.215",
@@ -6596,6 +7071,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c017.kgm1.cci.att.com",
         "host_ip":"32.50.54.25",
@@ -6613,6 +7089,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c015.kgm1.cci.att.com",
         "host_ip":"32.50.53.216",
@@ -6630,6 +7107,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c008.kgm1.cci.att.com",
         "host_ip":"32.50.54.26",
@@ -6647,6 +7125,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c004.kgm1.cci.att.com",
         "host_ip":"32.50.53.233",
@@ -6664,6 +7143,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c005.kgm1.cci.att.com",
         "host_ip":"32.50.53.219",
@@ -6681,6 +7161,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c009.kgm1.cci.att.com",
         "host_ip":"32.50.53.217",
@@ -6698,6 +7179,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c014.kgm1.cci.att.com",
         "host_ip":"32.50.53.153",
@@ -6715,6 +7197,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c021.kgm1.cci.att.com",
         "host_ip":"32.50.53.221",
@@ -6732,6 +7215,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c021.kgm1.cci.att.com",
         "host_ip":"32.50.53.155",
@@ -6749,6 +7233,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c019.kgm1.cci.att.com",
         "host_ip":"32.50.54.27",
@@ -6766,6 +7251,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c005.kgm1.cci.att.com",
         "host_ip":"32.50.53.89",
@@ -6783,6 +7269,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c013.kgm1.cci.att.com",
         "host_ip":"32.50.54.29",
@@ -6800,6 +7287,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c014.kgm1.cci.att.com",
         "host_ip":"32.50.53.91",
@@ -6817,6 +7305,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c019.kgm1.cci.att.com",
         "host_ip":"32.50.53.87",
@@ -6834,6 +7323,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c003.kgm1.cci.att.com",
         "host_ip":"32.50.54.30",
@@ -6851,6 +7341,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c018.kgm1.cci.att.com",
         "host_ip":"32.50.53.90",
@@ -6868,6 +7359,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c010.kgm1.cci.att.com",
         "host_ip":"32.50.53.222",
@@ -6885,6 +7377,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c017.kgm1.cci.att.com",
         "host_ip":"32.50.53.159",
@@ -6902,6 +7395,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c015.kgm1.cci.att.com",
         "host_ip":"32.50.54.28",
@@ -6919,6 +7413,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c003.kgm1.cci.att.com",
         "host_ip":"32.50.53.88",
@@ -6936,6 +7431,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c012.kgm1.cci.att.com",
         "host_ip":"32.50.54.32",
@@ -6953,6 +7449,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c014.kgm1.cci.att.com",
         "host_ip":"32.50.54.31",
@@ -6970,6 +7467,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c007.kgm1.cci.att.com",
         "host_ip":"32.50.54.33",
@@ -6987,6 +7485,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c006.kgm1.cci.att.com",
         "host_ip":"32.50.53.160",
@@ -7004,6 +7503,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c017.kgm1.cci.att.com",
         "host_ip":"32.50.53.92",
@@ -7021,6 +7521,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c004.kgm1.cci.att.com",
         "host_ip":"32.50.53.157",
@@ -7038,6 +7539,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c019.kgm1.cci.att.com",
         "host_ip":"32.50.53.223",
@@ -7055,6 +7557,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c013.kgm1.cci.att.com",
         "host_ip":"32.50.53.158",
@@ -7072,6 +7575,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c017.kgm1.cci.att.com",
         "host_ip":"32.50.53.226",
@@ -7089,6 +7593,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c020.kgm1.cci.att.com",
         "host_ip":"32.50.54.35",
@@ -7106,6 +7611,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c011.kgm1.cci.att.com",
         "host_ip":"32.50.53.225",
@@ -7123,6 +7629,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c007.kgm1.cci.att.com",
         "host_ip":"32.50.53.224",
@@ -7140,6 +7647,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c011.kgm1.cci.att.com",
         "host_ip":"32.50.54.34",
@@ -7157,6 +7665,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c003.kgm1.cci.att.com",
         "host_ip":"32.50.53.227",
@@ -7174,6 +7683,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c010.kgm1.cci.att.com",
         "host_ip":"32.50.53.161",
@@ -7191,6 +7701,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c009.kgm1.cci.att.com",
         "host_ip":"32.50.54.36",
@@ -7208,6 +7719,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c013.kgm1.cci.att.com",
         "host_ip":"32.50.53.229",
@@ -7225,6 +7737,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c020.kgm1.cci.att.com",
         "host_ip":"32.50.53.166",
@@ -7242,6 +7755,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c010.kgm1.cci.att.com",
         "host_ip":"32.50.54.38",
@@ -7259,6 +7773,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c007.kgm1.cci.att.com",
         "host_ip":"32.50.53.94",
@@ -7276,6 +7791,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c016.kgm1.cci.att.com",
         "host_ip":"32.50.54.37",
@@ -7293,6 +7809,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c005.kgm1.cci.att.com",
         "host_ip":"32.50.54.39",
@@ -7310,6 +7827,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c018.kgm1.cci.att.com",
         "host_ip":"32.50.53.165",
@@ -7327,6 +7845,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c010.kgm1.cci.att.com",
         "host_ip":"32.50.53.98",
@@ -7344,6 +7863,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c021.kgm1.cci.att.com",
         "host_ip":"32.50.53.93",
@@ -7361,6 +7881,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c018.kgm1.cci.att.com",
         "host_ip":"32.50.54.41",
@@ -7378,6 +7899,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c008.kgm1.cci.att.com",
         "host_ip":"32.50.53.96",
@@ -7395,6 +7917,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c012.kgm1.cci.att.com",
         "host_ip":"32.50.53.164",
@@ -7412,6 +7935,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c016.kgm1.cci.att.com",
         "host_ip":"32.50.53.162",
@@ -7429,6 +7953,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c018.kgm1.cci.att.com",
         "host_ip":"32.50.53.228",
@@ -7446,6 +7971,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c004.kgm1.cci.att.com",
         "host_ip":"32.50.53.97",
@@ -7463,6 +7989,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c013.kgm1.cci.att.com",
         "host_ip":"32.50.53.101",
@@ -7480,6 +8007,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c014.kgm1.cci.att.com",
         "host_ip":"32.50.53.231",
@@ -7497,6 +8025,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c020.kgm1.cci.att.com",
         "host_ip":"32.50.53.104",
@@ -7514,6 +8043,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c003.kgm1.cci.att.com",
         "host_ip":"32.50.53.167",
@@ -7531,6 +8061,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c007.kgm1.cci.att.com",
         "host_ip":"32.50.53.163",
@@ -7548,6 +8079,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c020.kgm1.cci.att.com",
         "host_ip":"32.50.53.230",
@@ -7565,6 +8097,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r12c021.kgm1.cci.att.com",
         "host_ip":"32.50.54.40",
@@ -7582,6 +8115,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c011.kgm1.cci.att.com",
         "host_ip":"32.50.53.102",
@@ -7599,6 +8133,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c009.kgm1.cci.att.com",
         "host_ip":"32.50.53.103",
@@ -7616,6 +8151,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c015.kgm1.cci.att.com",
         "host_ip":"32.50.53.95",
@@ -7633,6 +8169,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r13c006.kgm1.cci.att.com",
         "host_ip":"32.50.53.232",
@@ -7650,6 +8187,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c009.kgm1.cci.att.com",
         "host_ip":"32.50.53.168",
@@ -7667,6 +8205,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c012.kgm1.cci.att.com",
         "host_ip":"32.50.53.99",
@@ -7684,6 +8223,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c016.kgm1.cci.att.com",
         "host_ip":"32.50.53.100",
@@ -7701,6 +8241,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r15c006.kgm1.cci.att.com",
         "host_ip":"32.50.53.105",
@@ -7718,6 +8259,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r14c015.kgm1.cci.att.com",
         "host_ip":"32.50.53.169",
@@ -7735,6 +8277,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r04c010.kgm1.cci.att.com",
         "host_ip":"32.50.50.41",
@@ -7752,6 +8295,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c001.kgm1.cci.att.com",
         "host_ip":"32.50.52.83",
@@ -7769,6 +8313,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c002.kgm1.cci.att.com",
         "host_ip":"32.50.52.75",
@@ -7786,6 +8331,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c003.kgm1.cci.att.com",
         "host_ip":"32.50.52.76",
@@ -7803,6 +8349,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c004.kgm1.cci.att.com",
         "host_ip":"32.50.52.77",
@@ -7820,6 +8367,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c005.kgm1.cci.att.com",
         "host_ip":"32.50.52.78",
@@ -7837,6 +8385,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c006.kgm1.cci.att.com",
         "host_ip":"32.50.52.79",
@@ -7854,6 +8403,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c007.kgm1.cci.att.com",
         "host_ip":"32.50.52.80",
@@ -7871,6 +8421,7 @@ var myDataArr = [
         "status":"enabled"
     },
     {
+        "environment":"KGM",
         "zone":"KGM1",
         "hypervisor_hostname":"kgm1r19c010.kgm1.cci.att.com",
         "host_ip":"32.50.52.82",
