@@ -40,7 +40,6 @@
     font-family: Helvetica, Arial, Sans-Serif;
     text-decoration: none;
     vertical-align: middle;
-    display:block;
     margin-top:5px;
 }
 .filterButton:hover {
@@ -56,4 +55,23 @@
 .filterButton.active{
     border-top-color: #ef7000;
     background: #ef7000;
+}
+
+#menuChoices{
+    display:inline-block;
+    margin:0 auto 10px 10%;
+    background-color: #f2f2f2;
+    padding: 15px;
+    border-radius: 15px;
+    text-align:center;
+}
+
+#menuFilters{
+    display:inline-block;
+    margin:0 auto 20px auto;
+}
+
+#topMenu{
+    width:90%;
+    margin: 15px auto 0 auto;
 }

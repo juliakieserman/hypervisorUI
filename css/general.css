@@ -1,26 +1,13 @@
-#sideMenu {
-    list-style-type: none;
-    margin: 10em 0 0 2em;
-    padding: 0;
-    position:fixed;
-}
-
-#sideMenu li{
-    margin-top:10px;
-}
-
-#topMenu{
-    margin-left:20%;
-    margin-top:5%;
-}
 
 .activeView{
      color:red;
  }
 
 .view{
-    margin-left:20%;
+    margin-left:auto;
+    margin-right:auto;
     margin-top:5%;
+    width:80%;
 }
 
 #chartMem svg{
