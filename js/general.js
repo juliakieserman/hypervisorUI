@@ -28,9 +28,12 @@ app.factory('menuData', function(){
         environment: "All Environments",
         zone: "All Zones",
         hypervisor: "All Hypervisors",
-        filter: "No Filter",
-        activeView: "gen"
+        activeView: "env"
     };
+    var memory = true;
+    var vcpu = true;
+    var disk = true;
+    var overallocated = false;
     var data = myDataArr;//json data here - shouldn't change
     return{
         getData: function(){
@@ -54,39 +57,39 @@ app.factory('menuData', function(){
         setHypervisor: function(hypSet){
             menuSettings.hypervisor = hypSet;
         },
-        getFilter: function(){
-            return menuSettings.filter;
-        },
-        setFilter: function(filter){
-            menuSettings.filter = filter;
-        },
         getActive: function(){
             return menuSettings.activeView;
         },
         setActive: function(active){
+            console.log(active);
             menuSettings.activeView = active;
         }
     }
 });
 
-//typeahead controller
-
 app.controller("menuCtrl", function($scope, menuData){
-    //current selection:
-
-    $scope.genClass = 'activeView';
+    //current selection & activations:
+    $scope.genClass = '';
     $scope.env = "All Environments";
-    $scope.envClass = '';
+    $scope.envClass = 'activeView';
     $scope.zone = "All Zones";
     $scope.zoneClass = '';
     $scope.hyp = "All Hypervisors";
     $scope.hypClass = '';
     $scope.filter = "No Filter";
 
-    //menu items:
+    //menu items in dropdowns:
     $scope.envs = [];
     $scope.zones = [];
     $scope.hyps = [];
+
+    //current filters:
+    $scope.overallocated = false;
+    $scope.memory = true;
+    $scope.vcpu = true;
+    $scope.disk = true;
+
+    var changeKey = true;
     filterCriteria("All Environments", "All Zones", "All Hypervisors");
 
     $scope.resetActive = function(active){
@@ -109,65 +112,79 @@ app.controller("menuCtrl", function($scope, menuData){
                 break;
         }
         menuData.setActive(active);
+        setTimeout(function(){ changeKey = true;}, 50);
     }
-    /*$scope.setEnv = function(env){
-        if(env != $scope.env){
-            $scope.env = env;
-            $scope.zone = "All Zones";
-            $scope.hyp = "All Hypervisors";
-            menuData.setEnvironment(env);
-            menuData.setZone("All Zones");
-            menuData.setHypervisor("All Hyp");
-            filterCriteria(env, "All Zones", "All Hypervisors");
-        }
-    }*/
     $scope.$watch(function() {return $scope.env}, function(newValue, oldValue){
-        if(newValue != oldValue){
+        if((newValue != oldValue) && changeKey){
+            changeKey = false;
             $scope.zone = "All Zones";
             $scope.hyp = "All Hypervisors";
             menuData.setEnvironment($scope.env);
             menuData.setZone("All Zones");
-            menuData.setHypervisor("All Hyp");
+            menuData.setHypervisor("All Hypervisors");
             filterCriteria($scope.env, "All Zones", "All Hypervisors");
+            $scope.resetActive("env");
         }
     });
-    /*$scope.setZone = function(zone){
-        console.log(zone);
-        if(zone != $scope.zone){
-            $scope.zone = zone;
-            $scope.hyp = "All Hypervisors";
-            menuData.setZone(zone);
-            menuData.setHypervisor("All Hyp");
-            filterCriteria($scope.env, zone, "All Hypervisors");
-        }
-    }*/
     $scope.$watch(function() {return $scope.zone}, function(newValue, oldValue){
-        if(newValue != oldValue){
+        if((newValue != oldValue) && changeKey){
+            changeKey = false;
             $scope.hyp = "All Hypervisors";
             menuData.setZone($scope.zone);
-            menuData.setHypervisor("All Hyp");
+            menuData.setHypervisor("All Hypervisors");
             filterCriteria($scope.env, $scope.zone, "All Hypervisors");
+            $scope.resetActive("zone");
         }
     });
     $scope.$watch(function(){ return $scope.hyp;}, function(newValue, oldValue){
-       if(newValue != oldValue){
+       if((newValue != oldValue) && changeKey){
+           changeKey = false;
            menuData.setHypervisor($scope.hyp);
+           filterCriteria($scope.env, $scope.zone, $scope.hyp);
+           $scope.resetActive("hyp");
        }
     });
-    /*$scope.setHyp = function(hyp){
-        if(hyp != $scope.hyp){
-            $scope.hyp = hyp;
-            menuData.setHypervisor(hyp);
+    $scope.$watch(function(){ return $scope.overallocated}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(newValue){
+                menuData.overallocated = true;
+            } else{
+                menuData.overallocated = false;
+            }
         }
-    }*/
+    });
+    $scope.$watch(function(){ return $scope.memory}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(newValue){
+                menuData.memory = true;
+            } else{
+                menuData.memory = false;
+            }
+        }
+    });
+    $scope.$watch(function(){ return $scope.disk}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(newValue){
+                menuData.disk = true;
+            } else{
+                menuData.disk = false;
+            }
+        }
+    });
+    $scope.$watch(function(){ return $scope.vcpu}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(newValue){
+                menuData.vcpu = true;
+            } else{
+                menuData.vcpu = false;
+            }
+        }
+    });
     this.onSelectCallback = function(item, model){
         console.log(item);
         console.log(model);
     }
-    $scope.setFilter = function(filter){
-        menuData.setFilter(filter);
-        $scope.filter = filter;
-    }
+
     function filterCriteria(envReq, zoneReq, hypReq){
         var envs = [];
         var zones = [];
@@ -203,6 +220,7 @@ app.controller("menuCtrl", function($scope, menuData){
         $scope.hyps = hyps;
     }
 });
+
 app.controller("genCtrl", function($scope, menuData){
     $scope.genShow = true;
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
@@ -215,8 +233,9 @@ app.controller("genCtrl", function($scope, menuData){
         }
     });
 });
+
 app.controller("envCtrl", function($scope, menuData){
-    $scope.envShow = false;
+    $scope.envShow = true;
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
         if(newValue !== oldValue){
             if(newValue == "env"){
@@ -227,10 +246,17 @@ app.controller("envCtrl", function($scope, menuData){
         }
     });
 });
+
 app.controller("zoneCtrl", function($scope, menuData){
 
+    //'show' variables
     $scope.zoneShow = false;
-    $scope.zone = [];
+    $scope.showMemoryData = true;
+    $scope.showDiskData = true;
+    $scope.showVcpuData = true;
+    //------------------------------
+
+    //$scope.zone = [];
 
     var dataByZones = [];//holds objects whose zones match current filtering
 
@@ -251,20 +277,8 @@ app.controller("zoneCtrl", function($scope, menuData){
 
     //Watch Functions-----------------
     $scope.$watch(function() {return menuData.getZone(); }, function(newValue, oldValue){
-        if (newValue !== oldValue) $scope.filterZone(newValue, true);//update $scope.zone with appropriate data
+        if (newValue !== oldValue) $scope.filterZone(newValue, menuData.getEnvironment(), true);//update $scope.zone with appropriate data
     });
-
-    $scope.$watch(function() {return menuData.getFilter(); }, function(newValue, oldValue){
-        if(newValue !== oldValue) {
-            if(newValue == "Over Allocated"){
-                filterByOverAllocated();
-            }
-            if(newValue == "No Filter"){
-                $scope.filterZone(menuData.getZone(), true);
-            }
-        }
-    });
-
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
         if(newValue !== oldValue){
             if(newValue == "zone"){
@@ -276,6 +290,62 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             } else{
                 $scope.zoneShow = false;
+            }
+        }
+    });
+    $scope.$watch(function() {return menuData.overallocated; }, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(menuData.overallocated){
+                filterByOverAllocated();
+            } else{
+                $scope.filterZone(menuData.getZone(), menuData.getEnvironment(), true);
+            }
+        }
+    });
+    $scope.$watch(function() {return menuData.memory; }, function(newValue, oldValue){
+        console.log("IN HERHEH");
+        if(newValue != oldValue){
+            $scope.showMemoryData = newValue;
+            if(newValue){
+                document.getElementById("chartMem").style.display = "block";
+                if($scope.zoneShow){
+                    d3.select("#chartMem svg").remove();
+                    d3.select("#chartMem").append("svg");
+                    addMemoryGraph();
+                }
+            }else{
+                console.log("HIDE MEM");
+                document.getElementById("chartMem").style.display = "none";
+            }
+        }
+    });
+    $scope.$watch(function() {return menuData.disk; },function(newValue, oldValue){
+        if(newValue != oldValue){
+            $scope.showDiskData = newValue;
+            if(newValue){
+                document.getElementById("chartDisk").style.display = "block";
+                if($scope.zoneShow){
+                    d3.select("#chartDisk svg").remove();
+                    d3.select("#chartDisk").append("svg");
+                    addDiskGraph();
+                }
+            }else{
+                document.getElementById("chartDisk").style.display = "none";
+            }
+        }
+    });
+    $scope.$watch(function() {return menuData.vcpu; },function(newValue, oldValue){
+        if(newValue != oldValue){
+            $scope.showVcpuData = newValue;
+            if(newValue){
+                document.getElementById("chartCpu").style.display = "block";
+                if($scope.zoneShow){
+                    d3.select("#chartCpu svg").remove();
+                    d3.select("#chartCpu").append("svg");
+                    addCpuGraph();
+                }
+            }else{
+                document.getElementById("chartCpu").style.display = "none";
             }
         }
     });
@@ -291,21 +361,26 @@ app.controller("zoneCtrl", function($scope, menuData){
         addGraphs();
     }
 
-    $scope.filterZone = function(zoneName, runDrawFunct){
+    $scope.filterZone = function(zoneName, envName, runDrawFunct){
         dataByZones = [];
         var data = menuData.getData();
-        if(zoneName == "All Zones"){
+        if(zoneName == "All Zones" && envName == "All Environments"){
             dataByZones = data;
         } else{
             for(let i = 0; i < data.length; i++){
-                if(data[i].zone == zoneName){
-                    dataByZones.push(data[i]);
+                if(zoneName == "All Zones" && envName != "All Environments"){
+                    if(data[i].zone.substring(0, 3) == envName){
+                        dataByZones.push(data[i]);
+                    }
+                } else{ //restriction on zone
+                    if(data[i].zone == zoneName){
+                        dataByZones.push(data[i]);
+                    }
                 }
             }
         }
 
-        console.log(menuData.getFilter());
-        if(menuData.getFilter() == "No Filter"){// if no additional filter
+        if(!menuData.overallocated){// if no overallocated filter
             memoryZoneData = obtainMemoryZoneData(dataByZones);
             diskZoneData = obtainDiskZoneData(dataByZones);
             cpuZoneData = obtainCpuZoneData(dataByZones);
@@ -313,12 +388,12 @@ app.controller("zoneCtrl", function($scope, menuData){
             if(runDrawFunct){
                 redrawGraphs();
             }
-        } else if(menuData.getFilter() == "Over Allocated"){
+        } else{
             filterByOverAllocated();
         }
     }
 
-    $scope.filterZone("All Zones", false);
+    $scope.filterZone("All Zones", "All Environments", false);
 
     function filterByOverAllocated(){
         var overallocatedMemoryData = [
@@ -390,6 +465,13 @@ app.controller("zoneCtrl", function($scope, menuData){
     }
 
     function addGraphs(){
+        addMemoryGraph();
+        addDiskGraph();
+        addCpuGraph();
+    }
+    addGraphs();
+
+    function addMemoryGraph(){
         nv.addGraph(function() {
             chartMemory = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
@@ -425,7 +507,8 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             return chartMemory;
         });
-
+    }
+    function addDiskGraph(){
         nv.addGraph(function() {
             chartDisk = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
@@ -439,7 +522,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .showMaxMin(false)
                 .tickFormat(function(d) {
                     var dx =  diskZoneData[0].values[d] && diskZoneData[0].values[d][0];
-                    return dx
+                    return dx;
                 });
 
             chartDisk.y1Axis
@@ -448,7 +531,6 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             chartDisk.y2Axis
                 .tickFormat(function(d) { return d3.format(',f')(d) });
-
             chartDisk.bars.forceY([0]);
 
             d3.select('#chartDisk svg')
@@ -462,7 +544,13 @@ app.controller("zoneCtrl", function($scope, menuData){
             return chartDisk;
         });
 
+    }
+    function addCpuGraph(){
         nv.addGraph(function() {
+            var max1 = Math.max.apply(null, cpuZoneData[0].values);
+            var max2 = Math.max.apply(null, cpuZoneData[1].values);
+            var max = Math.max(max1, max2);
+
             chartCpu = nv.models.linePlusBarChart()
                 .margin({top: 30, right: 60, bottom: 50, left: 70})
                 .x(function(d,i) { return i })
@@ -472,19 +560,26 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             chartCpu.xAxis
                 .axisLabel('Hypervisors')
-                .showMaxMin(false)
+                .showMaxMin(true)
                 .tickFormat(function(d) {
                     var dx =  cpuZoneData[0].values[d] && cpuZoneData[0].values[d][0];
                     return dx
                 });
-
             chartCpu.y1Axis
                 .axisLabel('vCPUs')
                 .tickFormat(d3.format(',f'));
-
             chartCpu.y2Axis
                 .tickFormat(d3.format(',f'));
 
+            /*chartCpu.y1Axis
+             .axisLabel('vCPUs')
+             .tickFormat(d3.format(',f'));
+
+             chartCpu.forceY([0, 93]);
+
+             chartCpu.y2Axis
+             .tickFormat(d3.format(',f'));
+             */
             chartCpu.bars.forceY([0]);
 
             d3.select('#chartCpu svg')
@@ -498,13 +593,11 @@ app.controller("zoneCtrl", function($scope, menuData){
             return chartCpu;
         });
     }
-    addGraphs();
 
     function obtainMemoryZoneData(data){
         var chartData = [
             {
                 key: "Used Memory",
-                bar: true,
                 values: []
             },
             {
