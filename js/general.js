@@ -142,6 +142,7 @@ app.controller("menuCtrl", function($scope, menuData){
            menuData.setHypervisor($scope.hyp);
            filterCriteria($scope.env, $scope.zone, $scope.hyp);
            $scope.resetActive("hyp");
+           
        }
     });
     $scope.$watch(function(){ return $scope.overallocated}, function(newValue, oldValue){
@@ -413,7 +414,6 @@ app.controller("zoneCtrl", function($scope, menuData){
                  setTimeout(chartMemory.update(), 500);
                  setTimeout(chartDisk.update(), 500);*/
                 redrawGraphs();
-
             } else{
                 $scope.zoneShow = false;
             }
@@ -724,6 +724,7 @@ app.controller("zoneCtrl", function($scope, menuData){
         var chartData = [
             {
                 key: "Used Memory",
+                bar:true,
                 values: []
             },
             {
