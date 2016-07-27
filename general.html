@@ -78,8 +78,13 @@
         General View
     </div>-->
     <div class="view" ng-controller="envCtrl as env" ng-show="envShow">
-         <div id = "envChart">
-            <svg></svg>
+        <h1>Environment Overview</h1>
+        <div id = "envChartZone">
+            <div id="envGroupChart">
+                <svg></svg>
+            </div>
+            <div id="envSingleChart">
+            </div>
         </div>
     </div>
    <div class="view" ng-controller="zoneCtrl as zone" ng-show="zoneShow">
