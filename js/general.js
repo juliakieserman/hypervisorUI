@@ -236,7 +236,7 @@ app.controller("genCtrl", function($scope, menuData){
 });
 
 app.controller("envCtrl", function($scope, menuData){
-    $scope.envShow = false;
+    $scope.envShow = true;
 
     var envData = new Array();
     var envChartData = [];
@@ -543,7 +543,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 /*setTimeout(chartCpu.update(), 500);
                  setTimeout(chartMemory.update(), 500);
                  setTimeout(chartDisk.update(), 500);*/
-                redrawGraphs();
+                //redrawGraphs();
             } else{
                 $scope.zoneShow = false;
             }
@@ -559,7 +559,6 @@ app.controller("zoneCtrl", function($scope, menuData){
         }
     });
     $scope.$watch(function() {return menuData.memory; }, function(newValue, oldValue){
-        console.log("IN HERHEH");
         if(newValue != oldValue){
             $scope.showMemoryData = newValue;
             if(newValue){
@@ -608,9 +607,9 @@ app.controller("zoneCtrl", function($scope, menuData){
     //----------------------------------
 
     function redrawGraphs(){
-        d3.select("svg").remove();
-        d3.select("svg").remove();
-        d3.select("svg").remove();
+        d3.select("#chartCpu svg").remove();
+        d3.select("#chartDisk svg").remove();
+        d3.select("#chartMem svg").remove();
         d3.select('#chartMem').append('svg');
         d3.select("#chartDisk").append('svg');
         d3.select("#chartCpu").append('svg');
