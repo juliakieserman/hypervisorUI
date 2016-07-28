@@ -72,6 +72,7 @@ app.controller("menuCtrl", function($scope, menuData){
     $scope.genClass = '';
     $scope.env = "All Environments";
     $scope.envClass = 'activeView';
+    document.getElementById("envMenuElement").style.backgroundColor = "#ef7000";
     $scope.zone = "All Zones";
     $scope.zoneClass = '';
     $scope.hyp = "All Hypervisors";
@@ -553,7 +554,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 /*setTimeout(chartCpu.update(), 500);
                  setTimeout(chartMemory.update(), 500);
                  setTimeout(chartDisk.update(), 500);*/
-                //redrawGraphs();
+                redrawGraphs();
             } else{
                 $scope.zoneShow = false;
             }
