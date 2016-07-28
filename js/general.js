@@ -97,17 +97,24 @@ app.controller("menuCtrl", function($scope, menuData){
         $scope.envClass = '';
         $scope.zoneClass = '';
         $scope.hypClass = '';
+        var menuElements = document.querySelectorAll(".menuElement");
+        for(let i = 0; i < menuElements.length; i++){
+            menuElements[i].style.backgroundColor = "";
+        }
         switch(active){
             case 'gen':
                 $scope.genClass = 'activeView';
                 break;
             case 'env':
+                document.getElementById("envMenuElement").style.backgroundColor = "#ef7000";
                 $scope.envclass = 'activeView';
                 break;
             case 'zone':
+                document.getElementById("zoneMenuElement").style.backgroundColor = "#ef7000";
                 $scope.zoneView = 'activeView';
                 break;
             case 'hyp':
+                document.getElementById("hypMenuElement").style.backgroundColor = "#ef7000";
                 $scope.hypClass = 'activeView';
                 break;
         }
@@ -259,11 +266,11 @@ app.controller("envCtrl", function($scope, menuData){
         if(newValue !== oldValue){
             if(newValue == "All Environments"){
                 envChosen = newValue;
-                if (singleChartFlag == true) {
-                    clearSingleChart();
-                }
+                //clearSingleChart();
+                document.getElementById("envSingleChart").style.display = 'none';
             } else{
                 envChosen = newValue;
+                document.getElementById("envSingleChart").style.display = '';
                 singleChart();
                 singleChartFlag = true;
             }
@@ -288,6 +295,8 @@ app.controller("envCtrl", function($scope, menuData){
             ExtraWidthX: 300
         }
 
+        var LegendOptions = [envChosen];
+
 //Call function to draw the Radar chart
 //Will expect that data is in %'s
         RadarChart.draw("#envSingleChart", singleChartData, mycfg);
@@ -296,7 +305,7 @@ app.controller("envCtrl", function($scope, menuData){
 /////////// Initiate legend ////////////////
 ////////////////////////////////////////////
 
-        var svg = d3.select('#envChartZone')
+        var svg = d3.select('#envSingleChart')
             .selectAll('svg')
             .append('svg')
             .attr("width", w+300)
@@ -310,6 +319,7 @@ app.controller("envCtrl", function($scope, menuData){
             .attr("y", 10)
             .attr("font-size", "12px")
             .attr("fill", "#404040")
+            .text("Environment Usage");
 
 //Initiate Legend
         var legend = svg.append("g")
@@ -342,10 +352,10 @@ app.controller("envCtrl", function($scope, menuData){
         ;
     }
 
-    function clearSingleChart() {
+    /*function clearSingleChart() {
         var svg = d3.select("envSingleChart");
         svg.selectAll("*").remove();
-    }
+    }*/
 
     function getChartData() {
 
@@ -409,7 +419,7 @@ app.controller("envCtrl", function($scope, menuData){
         });
 
     }
-
+    drawEnvGraph();
 
     function initArray() {
 
@@ -639,7 +649,6 @@ app.controller("zoneCtrl", function($scope, menuData){
             memoryZoneData = obtainMemoryZoneData(dataByZones);
             diskZoneData = obtainDiskZoneData(dataByZones);
             cpuZoneData = obtainCpuZoneData(dataByZones);
-            console.log(memoryZoneData);
             if(runDrawFunct){
                 redrawGraphs();
             }
@@ -759,6 +768,7 @@ app.controller("zoneCtrl", function($scope, menuData){
             ;
 
             nv.utils.windowResize(chartMemory.update);
+            chartMemory.y2Axis.scale().domain(chartMemory.y1Axis.scale().domain());
 
             return chartMemory;
         });
@@ -853,7 +863,7 @@ app.controller("zoneCtrl", function($scope, menuData){
         var chartData = [
             {
                 key: "Used Memory",
-                bar:true,
+                bar: true,
                 values: []
             },
             {

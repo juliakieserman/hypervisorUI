@@ -61,7 +61,7 @@
     display:inline-block;
     margin:0 auto 10px 0;
     background-color: #f2f2f2;
-    padding: 15px;
+    padding: 5px;
     border-radius: 15px;
     text-align:center;
 }
@@ -74,4 +74,11 @@
 #topMenu{
     margin: 15px auto 0 auto;
     text-align:center;
+}
+
+.menuElement{
+    padding:10px 10px;
+    border-radius:20px;
+    display:inline-block;
+    /*background-color:#ef7000;*/
 }
