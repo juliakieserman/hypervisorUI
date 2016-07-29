@@ -540,6 +540,10 @@ app.controller("zoneCtrl", function($scope, menuData){
     var chartMemory;
     var chartCpu;
     var chartDisk;
+
+    var maxYMemory = 0;
+    var maxYCpu = 0;
+    var maxYDisk = 0;
     //------------------------------
 
 
@@ -663,63 +667,80 @@ app.controller("zoneCtrl", function($scope, menuData){
     function filterByOverAllocated(){
         var overallocatedMemoryData = [
             {
-                key: "Memory Overage Amt",
+                key: "Used Memory",
                 bar: true,
                 values: []
             },
             {
-                key: "Testing",
+                key: "Available Memory",
                 values: []
             }
         ];
         var overallocatedDiskData = [
             {
-                key: "Disk Overage Amt",
+                key: "Used Disk",
                 bar: true,
                 values: []
             },
             {
-                key: "Test",
+                key: "Available Disk",
                 values: []
             }
         ];
         var overallocatedCpuData = [
             {
-                key: "Cpu Overage Amt",
+                key: "Used vCPUs",
                 bar: true,
                 values: []
             },
             {
-                key: "Test",
+                key: "Available vCPUs",
                 values: []
             }
         ];
+        maxYMemory = 0;
+        maxYDisk = 0;
+        maxYCpu = 0;
         for(let i = 0; i < dataByZones.length; i++){
             //check memory values
             if(dataByZones[i].memory_mb < dataByZones[i].memory_mb_used){
                 var mem = [];
                 mem.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
-                mem.push(dataByZones[i].memory_mb_used - dataByZones[i].memory_mb);
+                mem.push(dataByZones[i].memory_mb_used);
+                maxYMemory = (dataByZones[i].memory_mb_used > maxYMemory ? dataByZones[i].memory_mb_used : maxYMemory);
                 overallocatedMemoryData[0].values.push(mem);
+
+                mem[1] = dataByZones[i].memory_mb;
+                maxYMemory = (dataByZones[i].memory_mb > maxYMemory ? dataByZones[i].memory_mb : maxYMemory);
+                overallocatedMemoryData[1].values.push(mem);
             }
             if(dataByZones[i].free_disk_gb < 0){
                 var disk = [];
                 disk.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
-                disk.push(Math.abs(dataByZones[i].free_disk_gb));
+                disk.push(dataByZones[i].local_gb - dataByZones[i].free_disk_gb);
+                maxYDisk = (dataByZones[i].local_gb - dataByZones[i].free_disk_gb > maxYDisk ? dataByZones[i].local_gb - dataByZones[i].free_disk_gb : maxYDisk);
                 overallocatedDiskData[0].values.push(disk);
+
+                disk[1] = dataByZones[i].local_gb;
+                maxYDisk = (dataByZones[i].local_gb > maxYDisk ? dataByZones[i].local_gb : maxYDisk);
+                overallocatedDiskData[1].values.push(disk);
             }
             if(dataByZones[i].vcpus < dataByZones[i].vcpus_used){
                 var vcpu = [];
                 vcpu.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
-                vcpu.push(dataByZones[i].vcpus_used - dataByZones[i].vcpus);
+                vcpu.push(dataByZones[i].vcpus_used);
+                maxYCpu = (dataByZones[i].vcpus_used > maxYCpu ? dataByZones[i].vcpus_used : maxYCpu);
                 overallocatedCpuData[0].values.push(vcpu);
+
+                vcpu[1] = dataByZones[i].vcpus;
+                maxYCpu = (dataByZones[i].vcpus > maxYCpu ? dataByZones[i].vcpus : maxYCpu);
+                overallocatedCpuData[1].values.push(vcpu);
             }
         }
 
         //now set the charts data & title fields
         memoryZoneTitle = "Memory Overallocated";
         memoryZoneData = overallocatedMemoryData;
-        console.log(JSON.stringify(memoryZoneData));
 
         cpuZoneTitle = "Cpu Overallocated";
         cpuZoneData = overallocatedCpuData;
@@ -760,7 +781,11 @@ app.controller("zoneCtrl", function($scope, menuData){
             chartMemory.y2Axis
                 .tickFormat(function(d) { return d3.format(',f')(d) });
 
-            chartMemory.bars.forceY([0]);
+            //chartMem -> nv-y2 nv-axisMax-y
+
+
+            chartMemory.bars.forceY([0, maxYMemory + 10000]);
+            chartMemory.lines.forceY([0, maxYMemory + 10000]);
 
             d3.select('#chartMem svg')
                 .datum(memoryZoneData)
@@ -770,7 +795,7 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             d3.select('#chartMem svg')
                 .append("text")
-                .attr("x", 600)
+                .attr("x", 800)
                 .attr("y", 15)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
@@ -780,7 +805,6 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             nv.utils.windowResize(chartMemory.update);
             //chartMemory.y2Axis.scale().domain(chartMemory.y1Axis.scale().domain());
-
             return chartMemory;
         });
     }
@@ -807,7 +831,9 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             chartDisk.y2Axis
                 .tickFormat(function(d) { return d3.format(',f')(d) });
-            chartDisk.bars.forceY([0]);
+
+            chartDisk.bars.forceY([0, maxYDisk + 100]);
+            chartDisk.lines.forceY([0, maxYDisk + 100]);
 
             d3.select('#chartDisk svg')
                 .datum(diskZoneData)
@@ -817,7 +843,7 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             d3.select('#chartDisk svg')
                 .append("text")
-                .attr("x", 600)
+                .attr("x", 800)
                 .attr("y", 15)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
@@ -857,16 +883,9 @@ app.controller("zoneCtrl", function($scope, menuData){
             chartCpu.y2Axis
                 .tickFormat(d3.format(',f'));
 
-            /*chartCpu.y1Axis
-             .axisLabel('vCPUs')
-             .tickFormat(d3.format(',f'));
 
-             chartCpu.forceY([0, 93]);
-
-             chartCpu.y2Axis
-             .tickFormat(d3.format(',f'));
-             */
-            chartCpu.bars.forceY([0]);
+            chartCpu.bars.forceY([0, maxYCpu + 5]);
+            chartCpu.lines.forceY([0, maxYCpu + 5]);
 
             d3.select('#chartCpu svg')
                 .datum(cpuZoneData)
@@ -876,7 +895,7 @@ app.controller("zoneCtrl", function($scope, menuData){
 
             d3.select('#chartCpu svg')
                 .append("text")
-                .attr("x", 600)
+                .attr("x", 800)
                 .attr("y", 15)
                 .attr("text-anchor", "middle")
                 .style("font-size", "16px")
@@ -902,13 +921,17 @@ app.controller("zoneCtrl", function($scope, menuData){
                 values: []
             }
         ];
+        maxYMemory = 0;
         for(let i = 0; i < data.length; i++){
             var used = [];
             var available = [];
             used.push(data[i].hypervisor_hostname.split(".")[0]);
             used.push(data[i].memory_mb_used);
+            maxYMemory = (data[i].memory_mb_used > maxYMemory ? data[i].memory_mb_used : maxYMemory);
+
             available.push(data[i].hypervisor_hostname.split(".")[0]);
             available.push(data[i].memory_mb);
+            maxYMemory = (data[i].memory_mb > maxYMemory ? data[i].memory_mb : maxYMemory);
 
             chartData[0].values.push(used);
             chartData[1].values.push(available);
@@ -928,14 +951,18 @@ app.controller("zoneCtrl", function($scope, menuData){
                 values: []
             }
         ];
+        maxYDisk = 0;
         for(let i = 0; i < data.length; i++){
             var used = [];
             var available = [];
             used.push(data[i].hypervisor_hostname.split(".")[0]);
             used.push(data[i].local_gb - data[i].free_disk_gb);
+            maxYDisk = (data[i].local_gb - data[i].free_disk_gb > maxYDisk ? data[i].local_gb - data[i].free_disk_gb : maxYDisk);
 
             available.push(data[i].hypervisor_hostname.split(".")[0]);
             available.push(data[i].local_gb);
+            maxYDisk = (data[i].local_gb > maxYDisk ? data[i].local_gb : maxYDisk);
+
             chartData[0].values.push(used);
             chartData[1].values.push(available);
         }
@@ -954,14 +981,17 @@ app.controller("zoneCtrl", function($scope, menuData){
                 values: []
             }
         ];
+        maxYCpu = 0;
         for(let i = 0; i < data.length; i++){
             var used = [];
             var available = [];
             used.push(data[i].hypervisor_hostname.split(".")[0]);
             used.push(data[i].vcpus_used);
+            maxYCpu = (data[i].vcpus_used > maxYCpu ? data[i].vcpus_used : maxYCpu);
 
             available.push(data[i].hypervisor_hostname.split(".")[0]);
             available.push(data[i].vcpus);
+            maxYCpu = (data[i].vcpus > maxYCpu ? data[i].vcpus : maxYCpu);
 
             chartData[0].values.push(used);
             chartData[1].values.push(available);

@@ -73,3 +73,7 @@
     z-index: 1;
     position:relative;
 }
+
+.nv-y2.nv-axis{
+    display:none;
+}
