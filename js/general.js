@@ -267,7 +267,6 @@ app.controller("envCtrl", function($scope, menuData){
         if(newValue !== oldValue){
             if(newValue == "All Environments"){
                 envChosen = newValue;
-                //clearSingleChart();
                 document.getElementById("envSingleChart").style.display = 'none';
             } else{
                 envChosen = newValue;
@@ -353,11 +352,6 @@ app.controller("envCtrl", function($scope, menuData){
         ;
     }
 
-    /*function clearSingleChart() {
-        var svg = d3.select("envSingleChart");
-        svg.selectAll("*").remove();
-    }*/
-
     function getChartData() {
 
         //initialize
@@ -409,6 +403,19 @@ app.controller("envCtrl", function($scope, menuData){
 
             chart.yAxis.axisLabel("% Used");
             chart.xAxis.axisLabel("Environment");
+            
+            chart.multibar.dispatch.on("elementClick", function(e) {
+                console.log(e.data.label);
+                if (e.data.label == envChosen) {
+                    envChosen = "All Environments";
+                    document.getElementById("envSingleChart").style.display = 'none';
+
+                } else {
+                    envChosen = e.data.label;
+                    document.getElementById("envSingleChart").style.display = '';
+                    singleChart();
+                }
+            });
 
            var svg = d3.select('#envGroupChart svg')
                 .datum(envChartData)
@@ -428,6 +435,35 @@ app.controller("envCtrl", function($scope, menuData){
         envData["EWR"] = {};
         envData["KGM"] = {};
         envData["PDK"] = {};
+        
+         envData["DPA"].memory_mb = 0;
+        envData["DPA"].memory_mb_used = 0;
+        envData["DPA"].local_gb = 0;
+        envData["DPA"].free_disk_gb = 0;
+        envData["DPA"].vcpus = 0;
+        envData["DPA"].vcpus_used = 0;
+
+        envData["EWR"].memory_mb = 0;
+        envData["EWR"].memory_mb_used = 0;
+        envData["EWR"].local_gb = 0;
+        envData["EWR"].free_disk_gb = 0;
+        envData["EWR"].vcpus = 0;
+        envData["EWR"].vcpus_used = 0;
+
+        envData["KGM"].memory_mb = 0;
+        envData["KGM"].memory_mb_used = 0;
+        envData["KGM"].local_gb = 0;
+        envData["KGM"].free_disk_gb = 0;
+        envData["KGM"].vcpus = 0;
+        envData["KGM"].vcpus_used = 0;
+
+        envData["PDK"].memory_mb = 0;
+        envData["PDK"].memory_mb_used = 0;
+        envData["PDK"].local_gb = 0;
+        envData["PDK"].free_disk_gb = 0;
+        envData["PDK"].vcpus = 0;
+        envData["PDK"].vcpus_used = 0;
+
 
     }
 
