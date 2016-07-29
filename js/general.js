@@ -72,7 +72,7 @@ app.controller("menuCtrl", function($scope, menuData){
     $scope.genClass = '';
     $scope.env = "All Environments";
     $scope.envClass = 'activeView';
-    document.getElementById("envMenuElement").style.backgroundColor = "#ef7000";
+    document.getElementById("envMenuElement").style.backgroundColor = "#0574ac";
     $scope.zone = "All Zones";
     $scope.zoneClass = '';
     $scope.hyp = "All Hypervisors";
@@ -107,15 +107,15 @@ app.controller("menuCtrl", function($scope, menuData){
                 $scope.genClass = 'activeView';
                 break;
             case 'env':
-                document.getElementById("envMenuElement").style.backgroundColor = "#ef7000";
+                document.getElementById("envMenuElement").style.backgroundColor = "#0574ac";
                 $scope.envclass = 'activeView';
                 break;
             case 'zone':
-                document.getElementById("zoneMenuElement").style.backgroundColor = "#ef7000";
-                $scope.zoneView = 'activeView';
+                document.getElementById("zoneMenuElement").style.backgroundColor = "#0574ac";
+                $scope.zoneClass = 'activeView';
                 break;
             case 'hyp':
-                document.getElementById("hypMenuElement").style.backgroundColor = "#ef7000";
+                document.getElementById("hypMenuElement").style.backgroundColor = "#0574ac";
                 $scope.hypClass = 'activeView';
                 break;
         }
@@ -150,7 +150,7 @@ app.controller("menuCtrl", function($scope, menuData){
            menuData.setHypervisor($scope.hyp);
            filterCriteria($scope.env, $scope.zone, $scope.hyp);
            $scope.resetActive("hyp");
-           
+
        }
     });
     $scope.$watch(function(){ return $scope.overallocated}, function(newValue, oldValue){
@@ -768,8 +768,18 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .call(chartMemory)
             ;
 
+            d3.select('#chartMem svg')
+                .append("text")
+                .attr("x", 600)
+                .attr("y", 15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .style("font-weight", "bold")
+                .text(memoryZoneTitle);
+
             nv.utils.windowResize(chartMemory.update);
-            chartMemory.y2Axis.scale().domain(chartMemory.y1Axis.scale().domain());
+            //chartMemory.y2Axis.scale().domain(chartMemory.y1Axis.scale().domain());
 
             return chartMemory;
         });
@@ -804,6 +814,16 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .transition().duration(500)
                 .call(chartDisk)
             ;
+
+            d3.select('#chartDisk svg')
+                .append("text")
+                .attr("x", 600)
+                .attr("y", 15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .style("font-weight", "bold")
+                .text(diskZoneTitle);
 
             nv.utils.windowResize(chartDisk.update);
 
@@ -853,6 +873,16 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .transition().duration(500)
                 .call(chartCpu)
             ;
+
+            d3.select('#chartCpu svg')
+                .append("text")
+                .attr("x", 600)
+                .attr("y", 15)
+                .attr("text-anchor", "middle")
+                .style("font-size", "16px")
+                .style("text-decoration", "underline")
+                .style("font-weight", "bold")
+                .text(cpuZoneTitle);
 
             nv.utils.windowResize(function(){ chartCpu.update() });
 
