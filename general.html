@@ -77,9 +77,9 @@
        </div>
         <div id="menuFilters">
             <a class="filterButton" ng-show="hypClass != 'activeView'" ng-class="overallocated ? 'active' : ''" ng-click="overallocated = !overallocated">Overallocated</a>&nbsp;&nbsp;&nbsp;&nbsp;
-            <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="memory ? 'active' : ''"ng-click="memory = !memory">Memory</a>
+            <!--<a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="memory ? 'active' : ''"ng-click="memory = !memory">Memory</a>
             <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="vcpu ? 'active' : ''"ng-click="vcpu = !vcpu">vCPU</a>
-            <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="disk ? 'active' : ''"ng-click="disk = !disk">Disk</a>
+            <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="disk ? 'active' : ''"ng-click="disk = !disk">Disk</a>-->
         </div>
 
    </div>
@@ -94,13 +94,25 @@
    <div class="view" ng-controller="zoneCtrl as zone" ng-show="zoneShow">
        <div id="chartMem" class="shrink">
            <svg id="svgMemory"></svg>
+
+       </div>
+       <div ng-show="showMemoryAlert" class="alert alert-success" role="alert">
+           <strong>Memory: </strong> Given the above filtering, no hypervisors are overallocated.
        </div>
        <div id="chartDisk" class="shrink">
           <svg id="svgDisk"></svg>
+
+       </div>
+       <div ng-show="showDiskAlert" class="alert alert-success" role="alert">
+           <strong>Disk: </strong> Given the above filtering, no hypervisors are overallocated.
        </div>
        <div id="chartCpu" class="shrink">
            <svg id="svgCpu"></svg>
+
        </div>
+        <div ng-show="showVcpuAlert" class="alert alert-success" role="alert">
+            <strong>vCPU: </strong> Given the above filtering, no hypervisors are overallocated.
+        </div>
    </div>
    <div class="view" ng-controller="hypCtrl as hyp" ng-show="hypShow">
         <div id="radarChartBody">

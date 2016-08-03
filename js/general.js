@@ -558,6 +558,10 @@ app.controller("zoneCtrl", function($scope, menuData){
     $scope.showMemoryData = true;
     $scope.showDiskData = true;
     $scope.showVcpuData = true;
+    
+    $scope.showMemoryAlert = false;
+    $scope.showDiskAlert = false;
+    $scope.showVcpuAlert = false;
     //------------------------------
 
     //$scope.zone = [];
@@ -605,7 +609,17 @@ app.controller("zoneCtrl", function($scope, menuData){
             if(menuData.overallocated){
                 filterByOverAllocated();
             } else{
+                $scope.showDiskAlert = false;
+                $scope.showMemoryAlert = false;
+                $scope.showVcpuAlert = false;
+                if($scope.showVcpuData)
+                    document.getElementById("chartCpu").style.display = "block";
+                if($scope.showMemoryData)
+                    document.getElementById("chartMem").style.display = "block";
+                if($scope.showDiskData)
+                    document.getElementById("chartDisk").style.display = "block";
                 $scope.filterZone(menuData.getZone(), menuData.getEnvironment(), true);
+                redrawGraphs();
             }
         }
     });
@@ -773,16 +787,59 @@ app.controller("zoneCtrl", function($scope, menuData){
                 overallocatedCpuData[1].values.push(vcpu);
             }
         }
+        if(overallocatedCpuData[0].values.length == 0){
+            $scope.showVcpuAlert = true;
+            document.getElementById("chartCpu").style.display = "none";
+        } else{
+            $scope.showVcpuAlert = false;
+            if(document.getElementById("chartCpu").style.display == "none"){
+                document.getElementById("chartCpu").style.display = "block";
+                d3.select("#chartCpu svg").remove();
+                d3.select("#chartCpu").append("svg");
+                addCpuGraph();
+            }
+            addBufferSpace(overallocatedCpuData);
+            cpuZoneTitle = "Cpu Overallocated";
+            cpuZoneData = overallocatedCpuData;
+        }
 
-        //now set the charts data & title fields
-        memoryZoneTitle = "Memory Overallocated";
-        memoryZoneData = overallocatedMemoryData;
+        if(overallocatedDiskData[0].values.length == 0){
+            $scope.showDiskAlert = true;
+            document.getElementById("chartDisk").style.display = "none";
+        } else{
+            $scope.showDiskAlert = false;
+            if(document.getElementById("chartDisk").style.display == "none"){
+                document.getElementById("chartDisk").style.display = "block";
+                d3.select("#chartDisk svg").remove();
+                d3.select("#chartDisk").append("svg");
+                addDiskGraph();
+            }
+            addBufferSpace(overallocatedDiskData);
+            diskZoneTitle = "Disk Overallocated";
+            diskZoneData = overallocatedDiskData;
+        }
 
-        cpuZoneTitle = "Cpu Overallocated";
-        cpuZoneData = overallocatedCpuData;
+        if(overallocatedMemoryData[0].values.length == 0){
+            $scope.showMemoryAlert = true;
+            document.getElementById("chartMem").style.display = "none";
+        } else{
+            $scope.showMemoryAlert = false;
+            if(document.getElementById("chartMem").style.display == "none"){
+                document.getElementById("chartMem").style.display = "block";
+                d3.select("#chartMem svg").remove();
+                d3.select("#chartMem").append("svg");
+                addMemoryGraph();
+            }
+            addBufferSpace(overallocatedMemoryData);
+            memoryZoneTitle = "Memory Overallocated";
+            memoryZoneData = overallocatedMemoryData;
+        }
 
-        diskZoneTitle = "Disk Overallocated";
-        diskZoneData = overallocatedDiskData;
+
+
+
+
+
         redrawGraphs();
     }
 
@@ -1033,6 +1090,31 @@ app.controller("zoneCtrl", function($scope, menuData){
             chartData[1].values.push(available);
         }
         return chartData;
+    }
+
+    function addBufferSpace(data){
+        while(data[0].values.length < 14){//add spacers
+            console.log("here");
+            var index = 0;
+            while(data[0].values.length > index){
+                if(data[0].values[index].length > 1){
+                    data[0].values.splice(index, 0, []);
+                    data[1].values.splice(index, 0, data[1].values[index]);
+                    if(data[0].values.length > index + 2){
+                        index+=2;
+                        data[0].values.splice(index, 0, []);
+                        data[1].values.splice(index, 0, data[1].values[index]);
+                        index++;
+                    } else{
+                        index+=2;
+                        data[0].values.push([]);
+                        data[1].values.push(data[1].values[data[1].values.length - 1]);
+                    }
+                } else{
+                    index++;
+                }
+            }
+        }
     }
 });
 
