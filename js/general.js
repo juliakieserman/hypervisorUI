@@ -243,6 +243,19 @@ app.controller("genCtrl", function($scope, menuData){
     });
 });
 
+app.controller("genCtrl", function($scope, menuData){
+    $scope.genShow = true;
+    $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
+        if(newValue !== oldValue){
+            if(newValue == "gen"){
+                $scope.genShow = true;
+            } else{
+                $scope.genShow = false;
+            }
+        }
+    });
+});
+
 app.controller("envCtrl", function($scope, menuData){
     $scope.envShow = true;
 
@@ -403,7 +416,7 @@ app.controller("envCtrl", function($scope, menuData){
 
             chart.yAxis.axisLabel("% Used");
             chart.xAxis.axisLabel("Environment");
-            
+
             chart.multibar.dispatch.on("elementClick", function(e) {
                 console.log(e.data.label);
                 if (e.data.label == envChosen) {
@@ -421,6 +434,7 @@ app.controller("envCtrl", function($scope, menuData){
                 .datum(envChartData)
                 .call(chart);
 
+
             nv.utils.windowResize(chart.update);
 
             return chart;
@@ -435,8 +449,8 @@ app.controller("envCtrl", function($scope, menuData){
         envData["EWR"] = {};
         envData["KGM"] = {};
         envData["PDK"] = {};
-        
-         envData["DPA"].memory_mb = 0;
+
+        envData["DPA"].memory_mb = 0;
         envData["DPA"].memory_mb_used = 0;
         envData["DPA"].local_gb = 0;
         envData["DPA"].free_disk_gb = 0;
@@ -464,22 +478,19 @@ app.controller("envCtrl", function($scope, menuData){
         envData["PDK"].vcpus = 0;
         envData["PDK"].vcpus_used = 0;
 
-
     }
 
     function obtainEnvChartData(){
 
         for (i = 0; i < myDataArr.length; i++) {
 
-            envData[myDataArr[i].environment].memory_mb = myDataArr[i].memory_mb;
-            envData[myDataArr[i].environment].memory_mb_used = myDataArr[i].memory_mb_used;
-            envData[myDataArr[i].environment].local_gb = myDataArr[i].local_gb;
-            envData[myDataArr[i].environment].free_disk_gb = myDataArr[i].free_disk_gb;
-            envData[myDataArr[i].environment].vcpus = myDataArr[i].vcpus;
-            envData[myDataArr[i].environment].vcpus_used = myDataArr[i].vcpus_used;
+            envData[myDataArr[i].environment].memory_mb += myDataArr[i].memory_mb;
+            envData[myDataArr[i].environment].memory_mb_used += myDataArr[i].memory_mb_used;
+            envData[myDataArr[i].environment].local_gb += myDataArr[i].local_gb;
+            envData[myDataArr[i].environment].free_disk_gb += myDataArr[i].free_disk_gb;
+            envData[myDataArr[i].environment].vcpus += myDataArr[i].vcpus;
+            envData[myDataArr[i].environment].vcpus_used += myDataArr[i].vcpus_used;
         }
-
-        console.log(envData["DPA"].memory_mb_used/envData["DPA"].memory_mb);
 
         envChartData =  [
             {
@@ -487,19 +498,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : envData["DPA"].memory_mb_used/envData["DPA"].memory_mb * 100
+                        "value" : (envData["DPA"].memory_mb_used/envData["DPA"].memory_mb)
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : envData["EWR"].memory_mb_used/envData["EWR"].memory_mb * 100
+                        "value" : envData["EWR"].memory_mb_used/envData["EWR"].memory_mb
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : envData["KGM"].memory_mb_used/envData["KGM"].memory_mb * 100
+                        "value" : envData["KGM"].memory_mb_used/envData["KGM"].memory_mb
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : envData["PDK"].memory_mb_used/envData["PDK"].memory_mb * 100
+                        "value" : envData["PDK"].memory_mb_used/envData["PDK"].memory_mb
                     }
                 ]
             },
@@ -508,19 +519,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : (envData["DPA"].local_gb - envData["DPA"].free_disk_gb)/envData["DPA"].local_gb * 100
+                        "value" : (envData["DPA"].local_gb - envData["DPA"].free_disk_gb)/envData["DPA"].local_gb
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : (envData["EWR"].local_gb - envData["EWR"].free_disk_gb)/envData["EWR"].local_gb * 100
+                        "value" : (envData["EWR"].local_gb - envData["EWR"].free_disk_gb)/envData["EWR"].local_gb
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : (envData["KGM"].local_gb - envData["KGM"].free_disk_gb)/envData["KGM"].local_gb * 100
+                        "value" : (envData["KGM"].local_gb - envData["KGM"].free_disk_gb)/envData["KGM"].local_gb
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : (envData["PDK"].local_gb - envData["PDK"].free_disk_gb)/envData["PDK"].local_gb * 100
+                        "value" : (envData["PDK"].local_gb - envData["PDK"].free_disk_gb)/envData["PDK"].local_gb
                     }
                 ]
             },
@@ -529,19 +540,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : envData["DPA"].vcpus_used/envData["DPA"].vcpus * 100
+                        "value" : envData["DPA"].vcpus_used/envData["DPA"].vcpus
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : envData["EWR"].vcpus_used/envData["EWR"].vcpus * 100
+                        "value" : envData["EWR"].vcpus_used/envData["EWR"].vcpus
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : envData["KGM"].vcpus_used/envData["KGM"].vcpus * 100
+                        "value" : envData["KGM"].vcpus_used/envData["KGM"].vcpus
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : envData["PDK"].vcpus_used/envData["PDK"].vcpus * 100
+                        "value" : envData["PDK"].vcpus_used/envData["PDK"].vcpus
                     }
                 ]
             }
