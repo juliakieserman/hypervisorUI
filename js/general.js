@@ -79,6 +79,13 @@ app.controller("menuCtrl", function($scope, menuData){
     $scope.hypClass = '';
     $scope.filter = "No Filter";
 
+    //list of architecture
+    $scope.archArray = [
+        {value: 'Mobility'},
+        {value: 'DataCenter'},
+        {value: 'Compact'}
+    ];
+
     //menu items in dropdowns:
     $scope.envs = [];
     $scope.zones = [];
@@ -290,6 +297,16 @@ app.controller("envCtrl", function($scope, menuData){
         }
     });
 
+    $scope.$watch(function(){ return $scope.overallocated}, function(newValue, oldValue){
+        if(newValue != oldValue){
+            if(newValue){
+                menuData.overallocated = true;
+            } else{
+                menuData.overallocated = false;
+            }
+        }
+    });
+
     function singleChart() {
 
         getChartData();
@@ -368,7 +385,7 @@ app.controller("envCtrl", function($scope, menuData){
     function getChartData() {
 
         //initialize
-       var singleChartCollect = {
+        var singleChartCollect = {
             "memory_mb" : 0,
             "memory_mb_used" : 0,
             "local_gb" : 0,
@@ -430,7 +447,7 @@ app.controller("envCtrl", function($scope, menuData){
                 }
             });
 
-           var svg = d3.select('#envGroupChart svg')
+            var svg = d3.select('#envGroupChart svg')
                 .datum(envChartData)
                 .call(chart);
 

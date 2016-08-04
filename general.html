@@ -73,7 +73,7 @@
                    </ui-select-choices>
                 </ui-select>
            </div>
-        &nbsp; &nbsp;
+        &nbsp;
        </div>
         <div id="menuFilters">
             <a class="filterButton" ng-show="hypClass != 'activeView'" ng-class="overallocated ? 'active' : ''" ng-click="overallocated = !overallocated">Overallocated</a>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -81,6 +81,18 @@
             <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="vcpu ? 'active' : ''"ng-click="vcpu = !vcpu">vCPU</a>
             <a class="filterButton" ng-show="zoneClass == 'activeView'" ng-class="disk ? 'active' : ''"ng-click="disk = !disk">Disk</a>-->
         </div>
+
+       &nbsp;<div id = "archFilter" ng-controller = "menuCtrl as ctrl">
+       <ui-select tagging ng-model="ctrl.selected" theme="bootstrap">
+           <ui-select-match placeholder="Select an architecture...">{{$select.selected.value}}</ui-select-match>
+           <ui-select-choices repeat="arch in archArray | filter:$select.search">
+               <div ng-bind = "arch.value | highlight: $select.search"></div>
+           </ui-select-choices>
+       </ui-select>
+   </div>
+
+
+
 
    </div>
     <div class="view" ng-controller="envCtrl as env" ng-show="envShow">
