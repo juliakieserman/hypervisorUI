@@ -755,36 +755,42 @@ app.controller("zoneCtrl", function($scope, menuData){
             //check memory values
             if(dataByZones[i].memory_mb < dataByZones[i].memory_mb_used){
                 var mem = [];
+                var mem2 = [];
                 mem.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 mem.push(dataByZones[i].memory_mb_used);
                 maxYMemory = (dataByZones[i].memory_mb_used > maxYMemory ? dataByZones[i].memory_mb_used : maxYMemory);
                 overallocatedMemoryData[0].values.push(mem);
 
-                mem[1] = dataByZones[i].memory_mb;
+                mem2.push(mem[0]);
+                mem2.push(dataByZones[i].memory_mb);
                 maxYMemory = (dataByZones[i].memory_mb > maxYMemory ? dataByZones[i].memory_mb : maxYMemory);
-                overallocatedMemoryData[1].values.push(mem);
+                overallocatedMemoryData[1].values.push(mem2);
             }
             if(dataByZones[i].free_disk_gb < 0){
                 var disk = [];
+                var disk2 = [];
                 disk.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 disk.push(dataByZones[i].local_gb - dataByZones[i].free_disk_gb);
                 maxYDisk = (dataByZones[i].local_gb - dataByZones[i].free_disk_gb > maxYDisk ? dataByZones[i].local_gb - dataByZones[i].free_disk_gb : maxYDisk);
                 overallocatedDiskData[0].values.push(disk);
 
-                disk[1] = dataByZones[i].local_gb;
+                disk2.push(disk[0]);
+                disk2.push(dataByZones[i].local_gb);
                 maxYDisk = (dataByZones[i].local_gb > maxYDisk ? dataByZones[i].local_gb : maxYDisk);
-                overallocatedDiskData[1].values.push(disk);
+                overallocatedDiskData[1].values.push(disk2);
             }
             if(dataByZones[i].vcpus < dataByZones[i].vcpus_used){
                 var vcpu = [];
+                var vcpu2 = [];
                 vcpu.push(dataByZones[i].hypervisor_hostname.split(".")[0]);
                 vcpu.push(dataByZones[i].vcpus_used);
                 maxYCpu = (dataByZones[i].vcpus_used > maxYCpu ? dataByZones[i].vcpus_used : maxYCpu);
                 overallocatedCpuData[0].values.push(vcpu);
 
-                vcpu[1] = dataByZones[i].vcpus;
+                vcpu2.push(vcpu[0]);
+                vcpu2.push(dataByZones[i].vcpus);
                 maxYCpu = (dataByZones[i].vcpus > maxYCpu ? dataByZones[i].vcpus : maxYCpu);
-                overallocatedCpuData[1].values.push(vcpu);
+                overallocatedCpuData[1].values.push(vcpu2);
             }
         }
         if(overallocatedCpuData[0].values.length == 0){
@@ -802,6 +808,7 @@ app.controller("zoneCtrl", function($scope, menuData){
             cpuZoneTitle = "Cpu Overallocated";
             cpuZoneData = overallocatedCpuData;
         }
+        console.log(cpuZoneData);
 
         if(overallocatedDiskData[0].values.length == 0){
             $scope.showDiskAlert = true;
@@ -834,12 +841,6 @@ app.controller("zoneCtrl", function($scope, menuData){
             memoryZoneTitle = "Memory Overallocated";
             memoryZoneData = overallocatedMemoryData;
         }
-
-
-
-
-
-
         redrawGraphs();
     }
 
