@@ -640,14 +640,19 @@ app.controller("zoneCtrl", function($scope, menuData){
                 $scope.showDiskAlert = false;
                 $scope.showMemoryAlert = false;
                 $scope.showVcpuAlert = false;
-                if($scope.showVcpuData)
+                diskZoneTitle = "Disk Usage";
+                memoryZoneTitle = "Memory Usage";
+                cpuZoneTitle = "vCPU Usage";
+                if($scope.showVcpuData){
                     document.getElementById("chartCpu").style.display = "block";
-                if($scope.showMemoryData)
+                }
+                if($scope.showMemoryData){
                     document.getElementById("chartMem").style.display = "block";
-                if($scope.showDiskData)
+                }
+                if($scope.showDiskData){
                     document.getElementById("chartDisk").style.display = "block";
+                }
                 $scope.filterZone(menuData.getZone(), menuData.getEnvironment(), true);
-                redrawGraphs();
             }
         }
     });
@@ -828,9 +833,6 @@ app.controller("zoneCtrl", function($scope, menuData){
             $scope.showVcpuAlert = false;
             if(document.getElementById("chartCpu").style.display == "none"){
                 document.getElementById("chartCpu").style.display = "block";
-                d3.select("#chartCpu svg").remove();
-                d3.select("#chartCpu").append("svg");
-                addCpuGraph();
             }
             addBufferSpace(overallocatedCpuData);
             cpuZoneTitle = "Cpu Overallocated";
@@ -845,9 +847,6 @@ app.controller("zoneCtrl", function($scope, menuData){
             $scope.showDiskAlert = false;
             if(document.getElementById("chartDisk").style.display == "none"){
                 document.getElementById("chartDisk").style.display = "block";
-                d3.select("#chartDisk svg").remove();
-                d3.select("#chartDisk").append("svg");
-                addDiskGraph();
             }
             addBufferSpace(overallocatedDiskData);
             diskZoneTitle = "Disk Overallocated";
@@ -861,9 +860,6 @@ app.controller("zoneCtrl", function($scope, menuData){
             $scope.showMemoryAlert = false;
             if(document.getElementById("chartMem").style.display == "none"){
                 document.getElementById("chartMem").style.display = "block";
-                d3.select("#chartMem svg").remove();
-                d3.select("#chartMem").append("svg");
-                addMemoryGraph();
             }
             addBufferSpace(overallocatedMemoryData);
             memoryZoneTitle = "Memory Overallocated";
