@@ -271,6 +271,7 @@ app.controller("envCtrl", function($scope, menuData){
     var singleChartData = [];
     var singleChartFlag = false;
     var envChosen = "All Environments";
+    var overAllocFlags = [];
 
     $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
         if(newValue !== oldValue){
@@ -297,15 +298,90 @@ app.controller("envCtrl", function($scope, menuData){
         }
     });
 
-    $scope.$watch(function(){ return $scope.overallocated}, function(newValue, oldValue){
+    $scope.$watch(function(){ return menuData.overallocated}, function(newValue, oldValue){
         if(newValue != oldValue){
             if(newValue){
                 menuData.overallocated = true;
+                overAllocated();
             } else{
                 menuData.overallocated = false;
+
+                drawEnvGraph();
             }
         }
     });
+
+
+
+
+    function overAllocated() {
+
+        findOverAllocatedEnvironments();
+
+        $scope.showMessage = function() {
+
+            if (overAllocFlags.length == 0 && menuData.overallocated == true) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        
+        if (overAllocFlags.length > 0) {
+
+            for (i=0; i < overAllocFlags.length; i++) {
+
+                envChartData = [
+                    {
+                        "key": "Memory",
+                        "values": [
+                            {
+                                "label": overAllocFlags[i],
+                                "value": envData[overAllocFlags[i]].memory_mb_used / envData[overAllocFlags[i]].memory_mb
+                            }
+                        ]
+                    }, {
+                        "key": "Disk Space (GB)",
+                        "values": [
+                            {
+                                "label": overAllocFlags[i],
+                                "value": (envData[overAllocFlags[i]].local_gb - envData[overAllocFlags[i]].free_disk_gb) / envData[overAllocFlags[i]].local_gb
+                            }
+                        ]
+                    }, {
+                        "key": "vCPU",
+                        "values": [
+                            {
+                                "label": overAllocFlags[i],
+                                "value": envData[overAllocFlags[i]].vcpus_used / envData[overAllocFlags[i]].vcpus
+                            }
+                        ]
+
+                    }
+
+                ]
+            }
+
+            drawEnvGraph();
+
+        }
+
+
+    }
+
+    function findOverAllocatedEnvironments() {
+
+        //CHEAT: FIX THIS
+        var myEnvs = ["DPA", "EWR", "PDK", "KGM"];
+
+        for (var i = 0; i < myEnvs.length; i++) {
+            console.log("iteration ");
+            console.log(i);
+            if ((envData[myEnvs[i]].memory_mb > envData[myEnvs[i]].memory_mb_used) || (envData[myEnvs[i]].vcpus_used > envData[myEnvs[i]].vcpus) || ((envData[myEnvs[i]].local_gb - envData[myEnvs[i]].free_disk_gb) > envData[myEnvs[i]].local_gb)) {
+                overAllocFlags.push(myEnvs[i]);
+            }
+        }
+    }
 
     function singleChart() {
 

@@ -98,6 +98,7 @@
     <div class="view" ng-controller="envCtrl as env" ng-show="envShow">
         <div id = "envChartZone">
             <div id="envGroupChart">
+                <h1 ng-show="showMessage()">No overallocated data!</h1>
                 <svg></svg>
             </div>
             <div id="envSingleChart"></div>
