@@ -493,7 +493,7 @@ app.controller("envCtrl", function($scope, menuData){
             chart.yAxis
                 .tickFormat(d3.format(',.2f'));
 
-            chart.yAxis.axisLabel("% Used");
+            chart.yAxis.axisLabel("% Used of Total Available");
             chart.xAxis.axisLabel("Environment");
 
             chart.multibar.dispatch.on("elementClick", function(e) {
@@ -577,19 +577,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : (envData["DPA"].memory_mb_used/envData["DPA"].memory_mb)
+                        "value" : (envData["DPA"].memory_mb_used/envData["DPA"].memory_mb) * 100
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : envData["EWR"].memory_mb_used/envData["EWR"].memory_mb
+                        "value" : envData["EWR"].memory_mb_used/envData["EWR"].memory_mb * 100
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : envData["KGM"].memory_mb_used/envData["KGM"].memory_mb
+                        "value" : envData["KGM"].memory_mb_used/envData["KGM"].memory_mb * 100
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : envData["PDK"].memory_mb_used/envData["PDK"].memory_mb
+                        "value" : envData["PDK"].memory_mb_used/envData["PDK"].memory_mb * 100
                     }
                 ]
             },
@@ -598,19 +598,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : (envData["DPA"].local_gb - envData["DPA"].free_disk_gb)/envData["DPA"].local_gb
+                        "value" : (envData["DPA"].local_gb - envData["DPA"].free_disk_gb)/envData["DPA"].local_gb * 100
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : (envData["EWR"].local_gb - envData["EWR"].free_disk_gb)/envData["EWR"].local_gb
+                        "value" : (envData["EWR"].local_gb - envData["EWR"].free_disk_gb)/envData["EWR"].local_gb * 100
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : (envData["KGM"].local_gb - envData["KGM"].free_disk_gb)/envData["KGM"].local_gb
+                        "value" : (envData["KGM"].local_gb - envData["KGM"].free_disk_gb)/envData["KGM"].local_gb * 100
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : (envData["PDK"].local_gb - envData["PDK"].free_disk_gb)/envData["PDK"].local_gb
+                        "value" : (envData["PDK"].local_gb - envData["PDK"].free_disk_gb)/envData["PDK"].local_gb * 100
                     }
                 ]
             },
@@ -619,19 +619,19 @@ app.controller("envCtrl", function($scope, menuData){
                 "values": [
                     {
                         "label" : "DPA" ,
-                        "value" : envData["DPA"].vcpus_used/envData["DPA"].vcpus
+                        "value" : envData["DPA"].vcpus_used/envData["DPA"].vcpus * 100
                     } ,
                     {
                         "label" : "EWR" ,
-                        "value" : envData["EWR"].vcpus_used/envData["EWR"].vcpus
+                        "value" : envData["EWR"].vcpus_used/envData["EWR"].vcpus * 100
                     } ,
                     {
                         "label" : "KGM" ,
-                        "value" : envData["KGM"].vcpus_used/envData["KGM"].vcpus
+                        "value" : envData["KGM"].vcpus_used/envData["KGM"].vcpus * 100
                     } ,
                     {
                         "label" : "PDK" ,
-                        "value" : envData["PDK"].vcpus_used/envData["PDK"].vcpus
+                        "value" : envData["PDK"].vcpus_used/envData["PDK"].vcpus * 100
                     }
                 ]
             }
