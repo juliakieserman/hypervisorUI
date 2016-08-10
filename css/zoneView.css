@@ -2,4 +2,8 @@
     opacity: 0;
 }
 
-
+.chartTitle{
+    text-decoration: underline;
+    text-align:center;
+    font-weight:bold;
+}

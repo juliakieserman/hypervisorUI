@@ -61,7 +61,6 @@ app.factory('menuData', function(){
             return menuSettings.activeView;
         },
         setActive: function(active){
-            console.log(active);
             menuSettings.activeView = active;
         }
     }
@@ -235,19 +234,6 @@ app.controller("menuCtrl", function($scope, menuData){
         hyps.unshift("All Hypervisors");
         $scope.hyps = hyps;
     }
-});
-
-app.controller("genCtrl", function($scope, menuData){
-    $scope.genShow = true;
-    $scope.$watch(function() {return menuData.getActive(); }, function(newValue, oldValue){
-        if(newValue !== oldValue){
-            if(newValue == "gen"){
-                $scope.genShow = true;
-            } else{
-                $scope.genShow = false;
-            }
-        }
-    });
 });
 
 app.controller("genCtrl", function($scope, menuData){
@@ -673,9 +659,9 @@ app.controller("zoneCtrl", function($scope, menuData){
     var dataByZones = [];//holds objects whose zones match current filtering
 
     //variables holding chart data---
-    var memoryZoneTitle = "Memory Usage";
-    var diskZoneTitle = "Disk Usage";
-    var cpuZoneTitle = "CPU Usage";
+    $scope.memoryZoneTitle = "Memory Usage";
+    $scope.diskZoneTitle = "Disk Usage";
+    $scope.cpuZoneTitle = "CPU Usage";
 
     var memoryZoneData = [];
     var diskZoneData = [];
@@ -716,9 +702,9 @@ app.controller("zoneCtrl", function($scope, menuData){
                 $scope.showDiskAlert = false;
                 $scope.showMemoryAlert = false;
                 $scope.showVcpuAlert = false;
-                diskZoneTitle = "Disk Usage";
-                memoryZoneTitle = "Memory Usage";
-                cpuZoneTitle = "vCPU Usage";
+                $scope.diskZoneTitle = "Disk Usage";
+                $scope.memoryZoneTitle = "Memory Usage";
+                $scope.cpuZoneTitle = "vCPU Usage";
                 if($scope.showVcpuData){
                     document.getElementById("chartCpu").style.display = "block";
                 }
@@ -911,10 +897,9 @@ app.controller("zoneCtrl", function($scope, menuData){
                 document.getElementById("chartCpu").style.display = "block";
             }
             addBufferSpace(overallocatedCpuData);
-            cpuZoneTitle = "Cpu Overallocated";
+            $scope.cpuZoneTitle = "Cpu Overallocated";
             cpuZoneData = overallocatedCpuData;
         }
-        console.log(cpuZoneData);
 
         if(overallocatedDiskData[0].values.length == 0){
             $scope.showDiskAlert = true;
@@ -925,7 +910,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 document.getElementById("chartDisk").style.display = "block";
             }
             addBufferSpace(overallocatedDiskData);
-            diskZoneTitle = "Disk Overallocated";
+            $scope.diskZoneTitle = "Disk Overallocated";
             diskZoneData = overallocatedDiskData;
         }
 
@@ -938,7 +923,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 document.getElementById("chartMem").style.display = "block";
             }
             addBufferSpace(overallocatedMemoryData);
-            memoryZoneTitle = "Memory Overallocated";
+            $scope.memoryZoneTitle = "Memory Overallocated";
             memoryZoneData = overallocatedMemoryData;
         }
         redrawGraphs();
@@ -987,15 +972,7 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .call(chartMemory)
             ;
 
-            d3.select('#chartMem svg')
-                .append("text")
-                .attr("x", 800)
-                .attr("y", 15)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .style("text-decoration", "underline")
-                .style("font-weight", "bold")
-                .text(memoryZoneTitle);
+            console.log("width: " + document.getElementById('chartMem').offsetWidth);
 
             nv.utils.windowResize(chartMemory.update);
             //chartMemory.y2Axis.scale().domain(chartMemory.y1Axis.scale().domain());
@@ -1034,16 +1011,6 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .transition().duration(500)
                 .call(chartDisk)
             ;
-
-            d3.select('#chartDisk svg')
-                .append("text")
-                .attr("x", 800)
-                .attr("y", 15)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .style("text-decoration", "underline")
-                .style("font-weight", "bold")
-                .text(diskZoneTitle);
 
             nv.utils.windowResize(chartDisk.update);
 
@@ -1086,16 +1053,6 @@ app.controller("zoneCtrl", function($scope, menuData){
                 .transition().duration(500)
                 .call(chartCpu)
             ;
-
-            d3.select('#chartCpu svg')
-                .append("text")
-                .attr("x", 800)
-                .attr("y", 15)
-                .attr("text-anchor", "middle")
-                .style("font-size", "16px")
-                .style("text-decoration", "underline")
-                .style("font-weight", "bold")
-                .text(cpuZoneTitle);
 
             nv.utils.windowResize(function(){ chartCpu.update() });
 
@@ -1195,7 +1152,6 @@ app.controller("zoneCtrl", function($scope, menuData){
 
     function addBufferSpace(data){
         while(data[0].values.length < 14){//add spacers
-            console.log("here");
             var index = 0;
             while(data[0].values.length > index){
                 if(data[0].values[index].length > 1){

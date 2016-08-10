@@ -94,22 +94,22 @@
     </div>
    <div class="view" ng-controller="zoneCtrl as zone" ng-show="zoneShow">
        <div id="chartMem" class="shrink">
+           <b><div class="chartTitle" ng-bind="memoryZoneTitle" style="text-align: center"></div></b>
            <svg id="svgMemory"></svg>
-
        </div>
        <div ng-show="showMemoryAlert" class="alert alert-success" role="alert">
            <strong>Memory: </strong> Given the above filtering, no hypervisors are overallocated.
        </div>
        <div id="chartDisk" class="shrink">
+           <b><div class="chartTitle" ng-bind="diskZoneTitle" style="text-align: center"></div></b>
           <svg id="svgDisk"></svg>
-
        </div>
        <div ng-show="showDiskAlert" class="alert alert-success" role="alert">
            <strong>Disk: </strong> Given the above filtering, no hypervisors are overallocated.
        </div>
        <div id="chartCpu" class="shrink">
+           <b><div class="chartTitle" ng-bind="cpuZoneTitle" style="text-align: center"></div></b>
            <svg id="svgCpu"></svg>
-
        </div>
         <div ng-show="showVcpuAlert" class="alert alert-success" role="alert">
             <strong>vCPU: </strong> Given the above filtering, no hypervisors are overallocated.
